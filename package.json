@@ -1,0 +1,24 @@
+{
+  "name": "eletroclima-propostas",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "dev:api": "node server/dev.mjs",
+    "dev:all": "npx concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev\"",
+    "test:groner": "node scripts/test-groner-busca.mjs",
+    "groner:funil-pos-vendas": "node scripts/groner-criar-funil-pos-vendas.mjs",
+    "novo-cliente": "node scripts/criar-projeto-cliente.mjs",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "html2pdf.js": "^0.10.2"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "dotenv": "^16.4.7",
+    "vite": "^6.3.5"
+  }
+}

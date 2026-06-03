@@ -1,0 +1,653 @@
+import './styles.css';
+import {
+  PLANOS,
+  SERVICOS,
+  COBERTURAS,
+  SEM_PLANO,
+  CONFIG_PRECIFICACAO,
+  calcularProposta,
+  planoTemDescontoAvulso,
+  temPlanoContratado,
+  precosComparativoPlanos,
+  formatarMoeda,
+  gerarNumeroProposta,
+} from './pricing.js';
+import { gerarPropostaPdfBlob, montarHtmlProposta } from './pdf.js';
+import { mountPlaybook } from './playbook.js';
+import { mountAdmin } from './admin.js';
+import { CONFIG_UPDATED_EVENT } from './config-store.js';
+import { initGronerBusca, mostrarLinkNegocioGroner, montarUrlNegocioGroner, aplicarFormularioGroner, atualizarBtnNovoProjetoGroner } from './groner-busca.js';
+import { sincronizarDescricaoPropostaGroner } from './groner-sync.js';
+import { garantirContatoPropostaGroner } from './groner-garantir-contato.js';
+import { criarProjetoLeadGroner } from './groner-criar-projeto.js';
+import { LOGO_URL, LOGO_ALT } from './brand.js';
+import { tituloPagina, getVendedorPadrao, CLIENTE } from './cliente-config.js';
+
+const getValidadeDias = () => CONFIG_PRECIFICACAO.constantes.validade_proposta_dias;
+
+let numeroProposta = gerarNumeroProposta();
+let propostaGerada = false;
+
+const els = {
+  form: document.getElementById('form-proposta'),
+  planosGrid: document.getElementById('planos-grid'),
+  servicosGrid: document.getElementById('servicos-grid'),
+  planoSelecionado: document.getElementById('plano-selecionado'),
+  resumo: document.getElementById('resumo-conteudo'),
+  alertas: document.getElementById('alertas'),
+  badge: document.getElementById('badge-numero'),
+  modal: document.getElementById('modal-overlay'),
+  preview: document.getElementById('preview-container'),
+  btnPreview: document.getElementById('btn-preview'),
+  btnGronerNovoProjeto: document.getElementById('btn-groner-novo-projeto'),
+  btnGerar: document.getElementById('btn-gerar'),
+  btnBaixarPdf: document.getElementById('btn-baixar-pdf'),
+  btnFechar: document.getElementById('btn-fechar'),
+  btnFecharModal: document.getElementById('btn-fechar-modal'),
+  viewProposta: document.getElementById('view-proposta'),
+  viewPlaybook: document.getElementById('view-playbook'),
+  viewAdmin: document.getElementById('view-admin'),
+  playbookRoot: document.getElementById('playbook-root'),
+  adminRoot: document.getElementById('admin-root'),
+  navTabs: document.querySelectorAll('.nav-tab'),
+};
+
+const VIEW_TITLES = {
+  proposta: tituloPagina('proposta'),
+  playbook: tituloPagina('playbook'),
+  admin: tituloPagina('admin'),
+};
+
+function switchView(view) {
+  els.viewProposta.classList.toggle('active', view === 'proposta');
+  els.viewProposta.classList.toggle('hidden', view !== 'proposta');
+  els.viewPlaybook.classList.toggle('active', view === 'playbook');
+  els.viewPlaybook.classList.toggle('hidden', view !== 'playbook');
+  els.viewAdmin.classList.toggle('active', view === 'admin');
+  els.viewAdmin.classList.toggle('hidden', view !== 'admin');
+
+  els.navTabs.forEach((tab) => {
+    tab.classList.toggle('active', tab.dataset.view === view);
+  });
+
+  document.title = VIEW_TITLES[view] || VIEW_TITLES.proposta;
+}
+
+function refreshPropostaUi() {
+  renderPlanos();
+  renderServicos();
+  renderResumo();
+}
+
+function getFormData() {
+  return {
+    cliente: {
+      nome: document.getElementById('cliente-nome').value.trim(),
+      documento: document.getElementById('cliente-documento').value.trim(),
+      email: document.getElementById('cliente-email').value.trim(),
+      telefone: document.getElementById('cliente-telefone').value.trim(),
+    },
+    usina: {
+      kwp: parseFloat(document.getElementById('usina-kwp').value) || 0,
+      qtdPlacas: parseInt(document.getElementById('usina-placas').value, 10) || 0,
+      distanciaKm: parseFloat(document.getElementById('usina-distancia').value) || 0,
+      endereco: document.getElementById('usina-endereco').value.trim(),
+      valorInvestimento: parseFloat(document.getElementById('usina-investimento').value) || 0,
+      valorContrato: parseFloat(document.getElementById('usina-contrato').value) || 0,
+    },
+    plano: els.planoSelecionado.value,
+    servicos: [...document.querySelectorAll('.servico-check:checked')].map((cb) => cb.value),
+  };
+}
+
+function getResultado() {
+  const data = getFormData();
+  return calcularProposta({
+    kwp: data.usina.kwp,
+    plano: data.plano,
+    distanciaKm: data.usina.distanciaKm,
+    servicosSelecionados: data.servicos,
+    qtdPlacas: data.usina.qtdPlacas,
+    valorContrato: data.usina.valorContrato,
+    valorInvestimento: data.usina.valorInvestimento,
+  });
+}
+
+function formatarMensalidadeResumo(valor, plano) {
+  if (!temPlanoContratado(plano)) return 'Sem plano';
+  return formatarMoeda(valor);
+}
+
+function renderPlanos() {
+  const data = getFormData();
+  const comparativo = precosComparativoPlanos(data.usina.kwp);
+  const selecionado = els.planoSelecionado.value;
+
+  const cardSemPlano = `
+    <article
+      class="plano-card plano-card-nenhum ${selecionado === SEM_PLANO ? 'selected' : ''}"
+      data-plano="${SEM_PLANO}"
+      role="button"
+      tabindex="0"
+      aria-pressed="${selecionado === SEM_PLANO}"
+    >
+      <h3 class="plano-nome">Sem plano</h3>
+      <p class="plano-tagline">Apenas serviços avulsos</p>
+      <p class="plano-preco">—<small>/mês</small></p>
+      <p class="plano-faixa">Sem mensalidade recorrente</p>
+      <ul class="plano-coberturas">
+        <li>Cobrança só dos serviços selecionados</li>
+        <li>Preços avulsos sem desconto de plano</li>
+      </ul>
+    </article>`;
+
+  els.planosGrid.innerHTML =
+    cardSemPlano +
+    comparativo
+      .map((plano) => {
+        const isSelected = plano.codigo === selecionado;
+        const planoRecomendado = CONFIG_PRECIFICACAO.constantes.plano_recomendado || 'GOLD';
+        const isRecomendado = plano.codigo === planoRecomendado;
+        const precoHtml = plano.sob_consulta
+          ? '<p class="plano-preco sob-consulta">Sob consulta</p>'
+          : `<p class="plano-preco">${formatarMoeda(plano.mensalidade)}<small>/mês</small></p>`;
+
+        const coberturas = (COBERTURAS[plano.codigo] || [])
+          .map((c) => `<li>${c}</li>`)
+          .join('');
+
+        return `
+        <article
+          class="plano-card ${isSelected ? 'selected' : ''} ${isRecomendado ? 'recomendado' : ''}"
+          data-plano="${plano.codigo}"
+          role="button"
+          tabindex="0"
+          aria-pressed="${isSelected}"
+        >
+          <h3 class="plano-nome">${plano.nome}</h3>
+          <p class="plano-tagline">${plano.tagline}</p>
+          ${precoHtml}
+          <p class="plano-faixa">Faixa ${plano.faixa}</p>
+          <ul class="plano-coberturas">${coberturas}</ul>
+        </article>`;
+      })
+      .join('');
+
+  els.planosGrid.querySelectorAll('.plano-card').forEach((card) => {
+    const select = () => {
+      els.planoSelecionado.value = card.dataset.plano;
+      renderPlanos();
+      renderServicos();
+      renderResumo();
+    };
+    card.addEventListener('click', select);
+    card.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        select();
+      }
+    });
+  });
+}
+
+function renderServicos() {
+  const data = getFormData();
+  const comPlano = planoTemDescontoAvulso(data.plano);
+  const selecionados = new Set(
+    [...document.querySelectorAll('.servico-check:checked')].map((cb) => cb.value),
+  );
+
+  els.servicosGrid.innerHTML = SERVICOS.map((s) => {
+    const preco = comPlano ? s.com : s.fora;
+    const sufixo =
+      s.tipo === 'POR_PLACA' ? '/placa' : s.tipo === 'PERCENTUAL' ? ' do contrato' : '';
+    const labelPreco = comPlano ? 'com desconto de plano' : 'valor tabelado';
+    const checked = selecionados.has(s.codigo) ? 'checked' : '';
+
+    return `
+    <label class="servico-item">
+      <input type="checkbox" class="servico-check" value="${s.codigo}" ${checked} />
+      <div>
+        <strong>${s.descricao}</strong>
+        <span>${formatarMoeda(preco)}${sufixo} (${labelPreco})</span>
+      </div>
+    </label>`;
+  }).join('');
+}
+
+function renderAlertas(resultado) {
+  const alertas = [];
+
+  if (resultado.motivos_sob_consulta.some((m) => m.startsWith('KWP_'))) {
+    const lim = CONFIG_PRECIFICACAO.constantes.kwp_maximo_automatico;
+    alertas.push(`Usina acima de ${lim} kWp — mensalidade sob consulta comercial.`);
+  }
+  if (resultado.motivos_sob_consulta.includes('DISTANCIA_ACIMA_600')) {
+    alertas.push('Distância acima de 600 km — taxa de deslocamento a combinar.');
+  }
+  if (resultado.deslocamento.valor > 0) {
+    alertas.push(
+      `Deslocamento: ${resultado.deslocamento.km_excedente} km excedentes × ${formatarMoeda(resultado.deslocamento.taxa)}/km = ${formatarMoeda(resultado.deslocamento.valor)}`,
+    );
+  }
+
+  els.alertas.innerHTML = alertas.map((a) => `<div class="alerta">${a}</div>`).join('');
+}
+
+function renderResumo() {
+  const resultado = getResultado();
+  renderAlertas(resultado);
+
+  const itensHtml =
+    resultado.itens.length > 0
+      ? `<ul>${resultado.itens.map((i) => `<li><span>${i.descricao}</span><span>${formatarMoeda(i.subtotal)}</span></li>`).join('')}</ul>`
+      : '<p style="color:var(--text-muted);font-size:0.9rem;margin:0">Nenhum item adicional selecionado.</p>';
+
+  els.resumo.innerHTML = `
+    <div class="resumo-item">
+      <label>Mensalidade</label>
+      <div class="valor">${formatarMensalidadeResumo(resultado.totais.recorrente_mensal, resultado.plano)}</div>
+    </div>
+    <div class="resumo-item">
+      <label>Avulsos + taxas</label>
+      <div class="valor">${formatarMoeda(resultado.totais.avulsos)}</div>
+    </div>
+    <div class="resumo-item destaque">
+      <label>1ª cobrança</label>
+      <div class="valor">${formatarMoeda(resultado.totais.primeira_cobranca)}</div>
+    </div>
+    <div class="resumo-itens">
+      <h3>Itens da proposta</h3>
+      ${itensHtml}
+    </div>`;
+}
+
+function montarDadosProposta() {
+  const data = getFormData();
+  const resultado = getResultado();
+
+  let planoInfo;
+  if (temPlanoContratado(data.plano)) {
+    planoInfo = precosComparativoPlanos(data.usina.kwp).find(
+      (p) => p.codigo === data.plano,
+    );
+  } else {
+    planoInfo = { nome: 'Sem plano', faixa: '—' };
+  }
+
+  if (!propostaGerada) {
+    numeroProposta = gerarNumeroProposta();
+    propostaGerada = true;
+    els.badge.textContent = `Proposta ${numeroProposta}`;
+    els.badge.classList.add('gerada');
+  }
+
+  return {
+    numeroProposta,
+    dataEmissao: new Date(),
+    validadeDias: getValidadeDias(),
+    cliente: data.cliente,
+    usina: data.usina,
+    plano: {
+      codigo: data.plano,
+      nome: planoInfo.nome,
+      faixa: planoInfo.faixa,
+    },
+    resultado,
+    vendedor: getVendedorPadrao(),
+  };
+}
+
+function abrirPreview() {
+  const dados = montarDadosProposta();
+  els.preview.innerHTML = montarHtmlProposta(dados);
+  els.modal.classList.remove('hidden');
+}
+
+function fecharModal() {
+  els.modal.classList.add('hidden');
+}
+
+async function gerarNovoProjetoGroner() {
+  if (!els.form.checkValidity()) {
+    els.form.reportValidity();
+    return;
+  }
+
+  const leadId = Number(document.getElementById('groner-lead-id')?.value);
+  if (!leadId) {
+    alert('Carregue um contato na Groner (Buscar → Carregar dados) antes de gerar projeto novo.');
+    return;
+  }
+
+  const data = getFormData();
+  const btn = els.btnGronerNovoProjeto;
+  const labelOriginal = btn?.textContent ?? 'Gerar projeto novo';
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'Criando projeto na Groner...';
+  }
+
+  try {
+    const result = await criarProjetoLeadGroner({
+      leadId,
+      cliente: data.cliente,
+      usina: data.usina,
+    });
+
+    if (result.formulario) {
+      aplicarFormularioGroner(result);
+    } else if (result.projetoId) {
+      document.getElementById('groner-projeto-id').value = result.projetoId;
+      mostrarLinkNegocioGroner(result.urlNegocio, result.projetoId);
+    }
+
+    const badge = document.getElementById('badge-groner');
+    if (badge) {
+      const nome = result.formulario?.groner?.projetoNome || result.projeto?.nome || 'Pré-venda';
+      badge.textContent = `Groner: ${nome} (#${result.projetoId}) · ${result.acao}`;
+      badge.classList.remove('hidden');
+    }
+
+    renderPlanos();
+    renderServicos();
+    renderResumo();
+
+    alert(
+      `Novo projeto criado na Groner (#${result.projetoId}).\n\nOrigem Pré-venda (${result.preVenda?.origemId}) · Tipo ${result.preVenda?.tipoProjetoId}.\n\nAjuste kWp/placas para outro modelo e gere o PDF quando quiser.`,
+    );
+  } catch (err) {
+    console.error('[groner] criar projeto:', err);
+    alert(`Erro ao criar projeto: ${err.message}`);
+  } finally {
+    if (btn) {
+      btn.textContent = labelOriginal;
+      atualizarBtnNovoProjetoGroner();
+    }
+  }
+}
+
+async function sincronizarComGroner(dados, pdfBlob, nomeArquivo) {
+  let projetoId = Number(document.getElementById('groner-projeto-id')?.value);
+  let leadId = Number(document.getElementById('groner-lead-id')?.value);
+
+  if (!projetoId) {
+    try {
+      els.btnGerar.textContent = 'Cadastrando na Groner...';
+      const vinculo = await garantirContatoPropostaGroner({
+        leadId: leadId || null,
+        projetoId: null,
+        cliente: dados.cliente,
+        usina: dados.usina,
+      });
+
+      if (vinculo.formulario) {
+        aplicarFormularioGroner(vinculo);
+      }
+
+      projetoId = Number(vinculo.projetoId);
+      leadId = Number(vinculo.leadId);
+
+      const badge = document.getElementById('badge-groner');
+      if (badge && vinculo.criado) {
+        badge.textContent = `Groner: ${vinculo.formulario?.groner?.projetoNome || 'Pré-venda'} (#${projetoId}) · ${vinculo.acao}`;
+        badge.classList.remove('hidden');
+      }
+      if (vinculo.urlNegocio) {
+        mostrarLinkNegocioGroner(vinculo.urlNegocio, projetoId);
+      }
+    } catch (err) {
+      console.warn('[groner] garantir contato:', err);
+      return {
+        ok: false,
+        erro: err.message,
+        skipped: false,
+      };
+    }
+  }
+
+  if (!projetoId) {
+    return { ok: true, skipped: true, motivo: 'Nenhum negócio (projeto) Groner vinculado.' };
+  }
+
+  const meta = {
+    precoSimulacao: document.getElementById('groner-preco-simulacao')?.value || null,
+    qtdPlacasProjeto: document.getElementById('groner-qtd-placas-projeto')?.value || null,
+  };
+
+  try {
+    return await sincronizarDescricaoPropostaGroner({
+      projetoId,
+      proposta: dados,
+      pdfBlob,
+      nomeArquivo,
+      meta,
+    });
+  } catch (err) {
+    console.warn('[groner] sincronizar proposta:', err);
+    return { ok: false, erro: err.message };
+  }
+}
+
+function nomeArquivoProposta(dados) {
+  const nomeCliente = dados.cliente.nome.replace(/[^\w\s-]/g, '').replace(/\s+/g, '_').slice(0, 40);
+  return `Proposta_${dados.numeroProposta}_${nomeCliente || 'cliente'}.pdf`;
+}
+
+async function gerarPdfBlob(dados) {
+  els.preview.innerHTML = montarHtmlProposta(dados);
+  const elemento = els.preview.querySelector('.pdf-proposta');
+  if (!elemento) {
+    throw new Error('Não foi possível montar a proposta para PDF.');
+  }
+  const blob = await gerarPropostaPdfBlob(elemento);
+  return { blob, nomeArquivo: nomeArquivoProposta(dados) };
+}
+
+async function exportarPdfProposta(dados, { baixar = true } = {}) {
+  const { blob, nomeArquivo } = await gerarPdfBlob(dados);
+  if (baixar) {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = nomeArquivo;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+  return { blob, nomeArquivo };
+}
+
+/** Clique em "Gerar proposta em PDF": PDF + descrição no campo personalizado Groner */
+async function gerarPropostaPdf() {
+  if (!els.form.checkValidity()) {
+    els.form.reportValidity();
+    return;
+  }
+
+  const dados = montarDadosProposta();
+  abrirPreview();
+
+  const labelOriginal = els.btnGerar.textContent;
+  els.btnGerar.disabled = true;
+  els.btnBaixarPdf.disabled = true;
+
+  try {
+    els.btnGerar.textContent = 'Gerando PDF...';
+    const { blob, nomeArquivo } = await exportarPdfProposta(dados);
+
+    els.btnGerar.textContent = 'Salvando na Groner...';
+    const sync = await sincronizarComGroner(dados, blob, nomeArquivo);
+    const projetoId = Number(document.getElementById('groner-projeto-id')?.value);
+    const urlNegocio = sync?.urlNegocio || (projetoId ? montarUrlNegocioGroner(projetoId) : null);
+
+    if (!sync?.skipped) {
+      const badge = document.getElementById('badge-groner');
+      const extras = [];
+      if (sync.descricao?.ok) extras.push('descrição');
+      if (sync.pdf?.ok) extras.push('PDF');
+      const camposOk = sync.campos?.filter((c) => c.ok).length ?? 0;
+      if (camposOk) extras.push(`${camposOk} campo(s)`);
+
+      if (badge && extras.length && !badge.textContent.includes('enviados ao CRM')) {
+        badge.textContent += ` · ${extras.join(' + ')} enviados ao CRM`;
+      }
+
+      if (urlNegocio) {
+        mostrarLinkNegocioGroner(urlNegocio, projetoId);
+      }
+    }
+
+    if (sync?.erro && !sync?.skipped) {
+      const partes = [];
+      if (sync.descricao?.ok === false) partes.push(`Descrição: ${sync.descricao.erro}`);
+      if (sync.pdf?.ok === false) partes.push(`PDF: ${sync.pdf.erro}`);
+      const msg = partes.length ? partes.join('\n\n') : sync.erro;
+      alert(
+        `O PDF foi baixado, mas nem tudo foi gravado na Groner:\n\n${msg}\n\nConfira GRONER_TOKEN na Vercel e se carregou o negócio antes de gerar.`,
+      );
+    } else if (sync?.ok === false && !sync?.skipped) {
+      alert(
+        `O PDF foi baixado, mas a Groner não recebeu os dados:\n\n${sync.erro}\n\nVerifique origem/tipo Pré-venda em config/groner-integracao.json e o GRONER_TOKEN.`,
+      );
+    }
+  } catch (err) {
+    console.error('Erro ao gerar proposta:', err);
+    alert(`Erro ao gerar proposta: ${err?.message || 'Tente novamente.'}`);
+  } finally {
+    els.btnGerar.textContent = labelOriginal;
+    els.btnGerar.disabled = false;
+    els.btnBaixarPdf.disabled = false;
+  }
+}
+
+/** Só PDF (modal "Baixar PDF" — não grava na Groner) */
+async function baixarPdf(dadosExistentes) {
+  const dados = dadosExistentes ?? montarDadosProposta();
+  els.btnBaixarPdf.disabled = true;
+  els.btnGerar.disabled = true;
+  const labelOriginal = els.btnBaixarPdf.textContent;
+  els.btnBaixarPdf.textContent = 'Gerando PDF...';
+
+  try {
+    await exportarPdfProposta(dados);
+  } catch (err) {
+    console.error('Erro ao gerar PDF:', err);
+    alert(`Erro ao gerar PDF: ${err?.message || 'Tente novamente.'}`);
+  } finally {
+    els.btnBaixarPdf.disabled = false;
+    els.btnGerar.disabled = false;
+    els.btnBaixarPdf.textContent = labelOriginal;
+  }
+}
+
+function init() {
+  const brandLogo = document.querySelector('.brand-logo-img');
+  if (brandLogo) {
+    brandLogo.src = LOGO_URL;
+    brandLogo.alt = LOGO_ALT;
+  }
+
+  const brandStrong = document.querySelector('.brand strong');
+  const brandSpan = document.querySelector('.brand span');
+  if (brandStrong && CLIENTE.produto?.tituloSidebar) {
+    brandStrong.textContent = CLIENTE.produto.tituloSidebar;
+  }
+  if (brandSpan && CLIENTE.produto?.subtituloSidebar) {
+    brandSpan.textContent = CLIENTE.produto.subtituloSidebar;
+  }
+
+  document.title = tituloPagina('proposta');
+
+  mountPlaybook(els.playbookRoot);
+  mountAdmin(els.adminRoot);
+
+  initGronerBusca({
+    inputEntrada: document.getElementById('groner-busca-entrada'),
+    sugestoesEntrada: document.getElementById('groner-sugestoes'),
+    btnEntrada: document.getElementById('btn-groner-entrada'),
+    btnBuscar: document.getElementById('btn-groner-buscar'),
+    resultadosEl: document.getElementById('groner-resultados'),
+    statusEl: document.getElementById('groner-status'),
+    getFiltros: () => ({
+      nome: document.getElementById('cliente-nome').value.trim(),
+      email: document.getElementById('cliente-email').value.trim(),
+      documento: document.getElementById('cliente-documento').value.trim(),
+      telefone: document.getElementById('cliente-telefone').value.trim(),
+    }),
+    onAplicado: () => {
+      renderPlanos();
+      renderServicos();
+      renderResumo();
+      atualizarBtnNovoProjetoGroner();
+      document.getElementById('cliente-nome')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    },
+  });
+
+  atualizarBtnNovoProjetoGroner();
+
+  window.addEventListener(CONFIG_UPDATED_EVENT, refreshPropostaUi);
+
+  els.navTabs.forEach((tab) => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchView(tab.dataset.view);
+    });
+  });
+
+  renderServicos();
+  renderPlanos();
+  renderResumo();
+
+  const inputs = els.form.querySelectorAll('input, select');
+  inputs.forEach((input) => {
+    input.addEventListener('input', () => {
+      renderPlanos();
+      renderServicos();
+      renderResumo();
+    });
+    input.addEventListener('change', () => {
+      renderPlanos();
+      renderServicos();
+      renderResumo();
+    });
+  });
+
+  els.servicosGrid.addEventListener('change', renderResumo);
+
+  els.btnPreview.addEventListener('click', () => {
+    if (!els.form.checkValidity()) {
+      els.form.reportValidity();
+      return;
+    }
+    abrirPreview();
+  });
+
+  els.btnGronerNovoProjeto?.addEventListener('click', () => {
+    gerarNovoProjetoGroner();
+  });
+
+  els.form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    gerarPropostaPdf();
+  });
+
+  els.btnBaixarPdf.addEventListener('click', () => {
+    if (!els.form.checkValidity()) {
+      els.form.reportValidity();
+      return;
+    }
+    const dados = montarDadosProposta();
+    if (!els.preview.querySelector('.pdf-proposta')) {
+      els.preview.innerHTML = montarHtmlProposta(dados);
+    }
+    baixarPdf(dados);
+  });
+  els.btnFechar.addEventListener('click', fecharModal);
+  els.btnFecharModal.addEventListener('click', fecharModal);
+  els.modal.addEventListener('click', (e) => {
+    if (e.target === els.modal) fecharModal();
+  });
+}
+
+init();

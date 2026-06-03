@@ -1,0 +1,31 @@
+{
+  "id": "eletroclima",
+  "nome": "Eletroclima",
+  "nomeCurto": "Eletroclima",
+  "slug": "eletroclima-propostas",
+  "produto": {
+    "tituloSidebar": "Propostas",
+    "subtituloSidebar": "Gestão Energética",
+    "sistemaNome": "Eletroclima Propostas"
+  },
+  "marca": {
+    "logoUrl": "https://url-da-logo-eletroclima.png",
+    "logoAlt": "Eletroclima",
+    "site": "eletroclima.com.br",
+    "email": "contato@eletroclima.com.br",
+    "vendedorPadrao": "Equipe Comercial Eletroclima"
+  },
+  "ui": {
+    "tituloProposta": "Nova Proposta Comercial",
+    "tituloPlaybook": "Playbook Comercial + Operacional",
+    "tituloAdmin": "Administração"
+  },
+  "localStorage": {
+    "precificacaoKey": "eletroclima-precificacao-v1",
+    "eventoConfig": "eletroclima-config-updated"
+  },
+  "groner": {
+    "notaCadastroLead": "Cadastro automático — Eletroclima Propostas (Pré-venda)",
+    "notaProjetoPrefixo": "Proposta Eletroclima"
+  }
+}

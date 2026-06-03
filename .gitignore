@@ -1,0 +1,16 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+.env.local
+.env.production
+.cursor/
+.netlify/
+*.log
+.DS_Store
+Thumbs.db
+
+# Relatórios locais Groner (scripts de setup — não vai para Vercel)
+docs/local/*
+!docs/local/.gitkeep

@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "versao": "1.0",
+    "atualizado_em": "2026-06-02",
+    "descricao": "Precificação Eletroclima — Planos de Gestão Energética, KM e Serviços",
+    "fonte_codigo": "src/pricing.js",
+    "unidade_moeda": "BRL",
+    "unidade_potencia": "kWp",
+    "unidade_distancia": "km"
+  },
+
+  "entradas": [
+    {
+      "codigo": "kwp",
+      "nome": "Potência da usina",
+      "tipo": "decimal",
+      "unidade": "kWp",
+      "obrigatorio": true,
+      "default": 8.5,
+      "min": 0.1,
+      "max": 500,
+      "campo_ui": "usina-kwp",
+      "usado_em": ["mensalidade", "faixa_kwp"]
+    },
+    {
+      "codigo": "plano",
+      "nome": "Plano selecionado",
+      "tipo": "enum",
+      "opcoes": ["NENHUM", "BASICO", "GOLD", "PREMIUM"],
+      "default": "NENHUM",
+      "campo_ui": "plano-selecionado",
+      "usado_em": ["mensalidade"]
+    },
+    {
+      "codigo": "distancia_km",
+      "nome": "Distância usina → base",
+      "tipo": "decimal",
+      "unidade": "km",
+      "obrigatorio": true,
+      "default": 35,
+      "campo_ui": "usina-distancia",
+      "usado_em": ["deslocamento"]
+    },
+    {
+      "codigo": "valor_contrato",
+      "nome": "Valor do contrato (seguro)",
+      "tipo": "decimal",
+      "unidade": "R$",
+      "obrigatorio": false,
+      "default": 0,
+      "campo_ui": "usina-contrato",
+      "usado_em": ["servico_SEGURO"]
+    },
+    {
+      "codigo": "servicos_selecionados",
+      "nome": "Serviços avulsos selecionados",
+      "tipo": "lista",
+      "obrigatorio": false,
+      "default": [],
+      "campo_ui": "servico-check",
+      "usado_em": ["servicos_avulsos"]
+    },
+    {
+      "codigo": "incluir_deslocamento_global",
+      "nome": "Incluir deslocamento como item global",
+      "tipo": "booleano",
+      "obrigatorio": false,
+      "default": true,
+      "campo_ui": null,
+      "usado_em": ["deslocamento"]
+    }
+  ],
+
+  "constantes": {
+    "sem_plano": "NENHUM",
+    "plano_recomendado": "GOLD",
+    "validade_proposta_dias": 15,
+    "raio_base_km": 50,
+    "kwp_maximo_automatico": 500,
+    "kwp_maximo_formulario": 500,
+    "distancia_maxima_automatica": 600,
+    "casas_decimais_moeda": 2,
+    "numero_proposta_seq_min": 1000,
+    "numero_proposta_seq_max": 9999
+  },
+
+  "limites": [
+    {
+      "codigo": "KWP_ACIMA_LIMITE",
+      "condicao": "kwp > 500",
+      "valor_limite": 500,
+      "efeito": "Mensalidade sob consulta",
+      "bloqueia_calculo": true
+    },
+    {
+      "codigo": "DISTANCIA_ACIMA_600",
+      "condicao": "distancia_km > 600",
+      "valor_limite": 600,
+      "efeito": "Deslocamento sob consulta",
+      "bloqueia_calculo": false
+    },
+    {
+      "codigo": "DESLOCAMENTO_ISENTO",
+      "condicao": "distancia_km <= 50",
+      "valor_limite": 50,
+      "efeito": "Deslocamento = R$ 0",
+      "bloqueia_calculo": false
+    }
+  ],
+
+  "planos": {
+    "BASICO": {
+      "codigo": "BASICO",
+      "nome": "Plano Básico",
+      "tagline": "Monitoramento essencial",
+      "desconto_avulso": false,
+      "coberturas": ["Monitoramento online", "App do cliente", "Relatório mensal básico"]
+    },
+    "GOLD": {
+      "codigo": "GOLD",
+      "nome": "Plano Gold",
+      "tagline": "Gestão completa da usina",
+      "desconto_avulso": false,
+      "coberturas": ["Tudo do Básico", "Suporte técnico remoto", "Histórico de geração"]
+    },
+    "PREMIUM": {
+      "codigo": "PREMIUM",
+      "nome": "Plano Premium",
+      "tagline": "Prioridade e suporte ampliado",
+      "desconto_avulso": false,
+      "coberturas": ["Tudo do Gold", "Prioridade no atendimento", "Visitas programadas"]
+    }
+  },
+
+  "faixas_kwp": [
+    { "kwp_min": 0,   "kwp_max": 5,   "precos": { "BASICO": 9.9,   "GOLD": 39.9,   "PREMIUM": 59.9   }, "sob_consulta": false },
+    { "kwp_min": 5,   "kwp_max": 10,  "precos": { "BASICO": 14.9,  "GOLD": 49.9,   "PREMIUM": 89.9   }, "sob_consulta": false },
+    { "kwp_min": 10,  "kwp_max": 15,  "precos": { "BASICO": 19.9,  "GOLD": 59.9,   "PREMIUM": 119.9  }, "sob_consulta": false },
+    { "kwp_min": 15,  "kwp_max": 20,  "precos": { "BASICO": 24.9,  "GOLD": 69.9,   "PREMIUM": 149.9  }, "sob_consulta": false },
+    { "kwp_min": 20,  "kwp_max": 25,  "precos": { "BASICO": 29.9,  "GOLD": 79.9,   "PREMIUM": 179.9  }, "sob_consulta": false },
+    { "kwp_min": 25,  "kwp_max": 30,  "precos": { "BASICO": 34.9,  "GOLD": 89.9,   "PREMIUM": 209.9  }, "sob_consulta": false },
+    { "kwp_min": 30,  "kwp_max": 35,  "precos": { "BASICO": 39.9,  "GOLD": 99.9,   "PREMIUM": 239.9  }, "sob_consulta": false },
+    { "kwp_min": 35,  "kwp_max": 40,  "precos": { "BASICO": 44.9,  "GOLD": 109.9,  "PREMIUM": 269.9  }, "sob_consulta": false },
+    { "kwp_min": 40,  "kwp_max": 45,  "precos": { "BASICO": 49.9,  "GOLD": 119.9,  "PREMIUM": 299.9  }, "sob_consulta": false },
+    { "kwp_min": 45,  "kwp_max": 50,  "precos": { "BASICO": 54.9,  "GOLD": 129.9,  "PREMIUM": 329.9  }, "sob_consulta": false },
+    { "kwp_min": 50,  "kwp_max": 100, "precos": { "BASICO": 99.9,  "GOLD": 299.9,  "PREMIUM": 699.9  }, "sob_consulta": false },
+    { "kwp_min": 100, "kwp_max": 250, "precos": { "BASICO": 149.9, "GOLD": 599.9,  "PREMIUM": 1299.9 }, "sob_consulta": false },
+    { "kwp_min": 250, "kwp_max": 500, "precos": { "BASICO": 199.9, "GOLD": 999.9,  "PREMIUM": 2199.9 }, "sob_consulta": false },
+    { "kwp_min": 500, "kwp_max": null, "precos": null, "sob_consulta": true }
+  ],
+
+  "faixas_deslocamento": [
+    { "km_min": 0,   "km_max": 50,  "taxa_por_km": 0,   "observacao": "Isento — raio base" },
+    { "km_min": 50,  "km_max": 200, "taxa_por_km": 1.5, "observacao": "R$ 1,50/km excedente" },
+    { "km_min": 200, "km_max": 400, "taxa_por_km": 2.0, "observacao": "R$ 2,00/km excedente" },
+    { "km_min": 400, "km_max": 600, "taxa_por_km": 2.5, "observacao": "R$ 2,50/km excedente" }
+  ],
+
+  "servicos_avulsos": [
+    { "codigo": "REMOCAO_GOTEIRAS",      "descricao": "Remoção de goteiras",                        "fora_plano": 350,  "com_plano": 350,  "tipo_calculo": "FIXO",       "presencial": true  },
+    { "codigo": "WIFI_PRESENCIAL",       "descricao": "Reconexão Wi-Fi presencial",                 "fora_plano": 150,  "com_plano": 150,  "tipo_calculo": "FIXO",       "presencial": true  },
+    { "codigo": "VISITA_INSPECAO",       "descricao": "Visita técnica — inspeção",                  "fora_plano": 300,  "com_plano": 300,  "tipo_calculo": "FIXO",       "presencial": true  },
+    { "codigo": "MANUT_PREVENTIVA",      "descricao": "Manutenção preventiva",                      "fora_plano": 30,   "com_plano": 30,   "tipo_calculo": "FIXO",       "presencial": true  },
+    { "codigo": "WIFI_REMOTA",           "descricao": "Reconexão Wi-Fi remota",                     "fora_plano": 100,  "com_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
+    { "codigo": "GESTAO_CREDITOS",       "descricao": "Gestão de créditos — rateio",                "fora_plano": 100,  "com_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
+    { "codigo": "ANALISE_FATURA",        "descricao": "Análise de fatura com reclamação na EQ",     "fora_plano": 100,  "com_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
+    { "codigo": "RECLAMACAO_TENSAO",     "descricao": "Reclamação nível de tensão",                 "fora_plano": 150,  "com_plano": 150,  "tipo_calculo": "FIXO",       "presencial": false },
+    { "codigo": "SEGURO",                "descricao": "Seguro (2% do valor do contrato)",           "fora_plano": 0.02, "com_plano": 0.02, "tipo_calculo": "PERCENTUAL", "presencial": false }
+  ],
+
+  "formulas": [
+    {
+      "codigo": "FAIXA_KWP",
+      "nome": "Busca de faixa por kWp",
+      "expressao": "faixa onde kwp > kwp_min E kwp <= kwp_max",
+      "regra_intervalo": "(min, max] — limite inferior exclusivo, superior inclusivo",
+      "entradas": ["kwp"],
+      "saida": "faixa_kwp"
+    },
+    {
+      "codigo": "MENSALIDADE",
+      "nome": "Mensalidade do plano",
+      "expressao": "faixas_kwp[faixa(kwp)].precos[plano]",
+      "entradas": ["kwp", "plano"],
+      "saida": "R$/mês",
+      "condicoes_sob_consulta": ["kwp > 500", "plano = NENHUM → null"]
+    },
+    {
+      "codigo": "DESLOCAMENTO",
+      "nome": "Taxa de deslocamento",
+      "expressao": "km = ceil(distancia_km); km_excedente = max(0, km - 50); valor = km_excedente × taxa_faixa(km)",
+      "entradas": ["distancia_km"],
+      "saida": "R$",
+      "condicoes": ["km <= 50 → valor = 0", "km > 600 → sob consulta"]
+    },
+    {
+      "codigo": "SERVICO_FIXO",
+      "nome": "Serviço avulso — valor fixo",
+      "expressao": "preco = fora_plano",
+      "entradas": ["codigo_servico"],
+      "saida": "R$"
+    },
+    {
+      "codigo": "SERVICO_PERCENTUAL",
+      "nome": "Seguro — percentual do contrato",
+      "expressao": "preco = valor_contrato × 0.02",
+      "entradas": ["valor_contrato"],
+      "saida": "R$"
+    },
+    {
+      "codigo": "TOTAL_AVULSOS",
+      "nome": "Total de itens avulsos",
+      "expressao": "total = Σ servicos + deslocamento_global",
+      "entradas": ["servicos_selecionados", "distancia_km"],
+      "saida": "R$"
+    },
+    {
+      "codigo": "PRIMEIRA_COBRANCA",
+      "nome": "Primeira cobrança da proposta",
+      "expressao": "primeira = (mensalidade || 0) + total_avulsos",
+      "entradas": ["mensalidade", "total_avulsos"],
+      "saida": "R$"
+    }
+  ],
+
+  "casos_teste": [
+    { "id": 1, "kwp": 4,   "plano": "BASICO",  "km": 30,  "mensalidade_esperada": 9.9,   "deslocamento_esperado": 0    },
+    { "id": 2, "kwp": 7,   "plano": "GOLD",    "km": 100, "mensalidade_esperada": 49.9,  "deslocamento_esperado": 75   },
+    { "id": 3, "kwp": 75,  "plano": "PREMIUM", "km": 250, "mensalidade_esperada": 699.9, "deslocamento_esperado": 400  },
+    { "id": 4, "kwp": 550, "plano": "GOLD",    "km": 40,  "mensalidade_esperada": null,  "deslocamento_esperado": 0    },
+    { "id": 5, "kwp": 10,  "plano": "BASICO",  "km": 650, "mensalidade_esperada": 19.9,  "deslocamento_esperado": null },
+    { "id": 6, "servico": "SEGURO", "valor_contrato": 50000, "esperado": 1000 },
+    { "id": 7, "servico": "MANUT_PREVENTIVA", "km": 80, "esperado": 30, "deslocamento_global": 45 }
+  ]
+}
