@@ -8,7 +8,7 @@ import { handleGarantirContatoProposta } from '../lib/groner/handlers/garantir-c
 import { handleCriarProjetoLead } from '../lib/groner/handlers/criar-projeto-lead.js';
 import { handleGronerDiagnostico } from '../lib/groner/handlers/diagnostico.js';
 
-config();
+config({ override: true });
 
 const PORT = Number(process.env.API_PORT || 3001);
 

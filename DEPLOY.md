@@ -4,8 +4,8 @@ O mesmo repositório pode publicar nos **dois** lugares. Cada push no `main` atu
 
 | Onde | URL | Observação |
 |------|-----|------------|
-| **GitHub Pages** | `https://ilucasmacedo.github.io/mhz-propostas/` | Usa subpasta `/mhz-propostas/` (automático no Actions) |
-| **Vercel** | `https://mhz-propostas.vercel.app` (ou domínio próprio) | Build na raiz `/` — sem `BASE_PATH` |
+| **GitHub Pages** | `https://ilucasmacedo.github.io/eletroclima-propostas/` | Usa subpasta `/eletroclima-propostas/` (automático no Actions) |
+| **Vercel** | `https://eletroclima-propostas.vercel.app` (ou domínio próprio) | Build na raiz `/` — **API Groner funciona aqui** |
 
 ---
 
@@ -15,7 +15,7 @@ O site é publicado automaticamente a cada push na branch `main` (ou `master`).
 
 ### Configuração inicial (uma vez)
 
-1. Repositório: [github.com/ilucasmacedo/mhz-propostas](https://github.com/ilucasmacedo/mhz-propostas)
+1. Repositório: [github.com/ilucasmacedo/eletroclima-propostas](https://github.com/ilucasmacedo/eletroclima-propostas)
 2. No GitHub: **Settings → Pages → Build and deployment**
    - Source: **GitHub Actions**
 3. O workflow `.github/workflows/deploy.yml` roda sozinho a cada push.
@@ -37,7 +37,7 @@ Acompanhe em **Actions** no GitHub.
 ### Configuração inicial (uma vez)
 
 1. Acesse [vercel.com](https://vercel.com) e entre com a conta GitHub.
-2. **Add New → Project** → importe `ilucasmacedo/mhz-propostas`.
+2. **Add New → Project** → importe `ilucasmacedo/eletroclima-propostas`.
 3. Deixe as opções padrão (Vite detectado automaticamente):
    - **Build Command:** `npm run build`
    - **Output Directory:** `dist`

@@ -41,7 +41,6 @@ export function mountAdmin(root) {
 
   function syncDraftFromDom() {
     draft.constantes.validade_proposta_dias = num('#adm-validade');
-    draft.constantes.percentual_investimento_padrao = num('#adm-pct-inv');
     draft.constantes.raio_base_km = num('#adm-raio');
     draft.constantes.kwp_maximo_automatico = num('#adm-kwp-max');
 
@@ -51,6 +50,9 @@ export function mountAdmin(root) {
       draft.planos[codigo].tagline = row.querySelector('[data-f=tagline]').value.trim();
       draft.planos[codigo].alias = row.querySelector('[data-f=alias]').value.trim() || undefined;
       draft.planos[codigo].desconto_avulso = row.querySelector('[data-f=desconto]').checked;
+      draft.planos[codigo].percentual_desconto_avulso = numEl(
+        row.querySelector('[data-f=pct_desconto]'),
+      );
       draft.planos[codigo].coberturas = row
         .querySelector('[data-f=coberturas]')
         .value.split('\n')
@@ -92,7 +94,6 @@ export function mountAdmin(root) {
         codigo: row.querySelector('[data-f=codigo]').value.trim().toUpperCase().replace(/\s+/g, '_'),
         descricao: row.querySelector('[data-f=descricao]').value.trim(),
         fora_plano: numEl(row.querySelector('[data-f=fora]')),
-        com_plano: numEl(row.querySelector('[data-f=com]')),
         tipo_calculo: row.querySelector('[data-f=tipo]').value,
         presencial: row.querySelector('[data-f=presencial]').checked,
         keyword: row.querySelector('[data-f=keyword]').value.trim() || undefined,
@@ -125,6 +126,7 @@ export function mountAdmin(root) {
             <label><span>Tagline</span><input data-f="tagline" value="${esc(p.tagline)}" /></label>
             <label><span>Alias (opcional)</span><input data-f="alias" value="${esc(p.alias || '')}" placeholder="Basic" /></label>
             <label class="admin-check"><input type="checkbox" data-f="desconto" ${p.desconto_avulso ? 'checked' : ''} /> Desconto em serviços avulsos</label>
+            <label><span>% desconto avulsos</span><input type="number" step="1" min="0" max="100" data-f="pct_desconto" value="${p.percentual_desconto_avulso ?? 0}" /></label>
             <label class="span-2"><span>Coberturas (1 por linha)</span><textarea data-f="coberturas" rows="4">${esc((p.coberturas || []).join('\n'))}</textarea></label>
           </div>
         </div>`;
@@ -133,7 +135,7 @@ export function mountAdmin(root) {
 
     return `
       <div class="admin-section-head">
-        <p>Edite nomes, taglines e se o plano dá desconto em avulsos.</p>
+        <p>Edite nomes, taglines e % de desconto em avulsos (Padrão 5%, Premium 10%).</p>
         <button type="button" class="btn btn-secondary btn-sm" id="adm-add-plano">+ Adicionar plano</button>
       </div>
       <div class="admin-cards">${cards}</div>`;
@@ -212,11 +214,10 @@ export function mountAdmin(root) {
         <td><input data-f="codigo" value="${esc(s.codigo)}" class="admin-inp-sm" /></td>
         <td><input data-f="descricao" value="${esc(s.descricao)}" /></td>
         <td><input type="number" step="0.001" data-f="fora" value="${s.fora_plano}" class="admin-inp-sm" /></td>
-        <td><input type="number" step="0.001" data-f="com" value="${s.com_plano}" class="admin-inp-sm" /></td>
         <td>
           <select data-f="tipo" class="admin-inp-sm">
             <option value="FIXO" ${s.tipo_calculo === 'FIXO' ? 'selected' : ''}>Fixo</option>
-            <option value="POR_PLACA" ${s.tipo_calculo === 'POR_PLACA' ? 'selected' : ''}>Por placa</option>
+            <option value="POR_MODULO" ${s.tipo_calculo === 'POR_MODULO' || s.tipo_calculo === 'POR_PLACA' ? 'selected' : ''}>Por módulo</option>
             <option value="PERCENTUAL" ${s.tipo_calculo === 'PERCENTUAL' ? 'selected' : ''}>% contrato</option>
           </select>
         </td>
@@ -229,13 +230,13 @@ export function mountAdmin(root) {
 
     return `
       <div class="admin-section-head">
-        <p>Serviços avulsos na proposta. Percentual: 0.02 = 2%. Keyword = texto buscado no checklist CRM.</p>
+        <p>Preço base (fora plano). Desconto % vem do plano Padrão/Premium. 0.02 = 2% seguro.</p>
         <button type="button" class="btn btn-secondary btn-sm" id="adm-add-serv">+ Serviço</button>
       </div>
       <div class="admin-table-wrap">
         <table class="admin-table admin-table-wide">
           <thead><tr>
-            <th>Código</th><th>Descrição</th><th>Fora plano</th><th>Com plano</th>
+            <th>Código</th><th>Descrição</th><th>Preço base</th>
             <th>Tipo</th><th>Pres.</th><th>Keyword CRM</th><th></th>
           </tr></thead>
           <tbody>${rows}</tbody>
@@ -248,7 +249,6 @@ export function mountAdmin(root) {
     return `
       <div class="admin-fields const-grid">
         <label><span>Validade proposta (dias)</span><input type="number" id="adm-validade" value="${c.validade_proposta_dias}" /></label>
-        <label><span>Taxa investimento padrão (%)</span><input type="number" step="0.1" id="adm-pct-inv" value="${c.percentual_investimento_padrao}" /></label>
         <label><span>Raio base deslocamento (km)</span><input type="number" id="adm-raio" value="${c.raio_base_km}" /></label>
         <label><span>kWp máx. automático</span><input type="number" id="adm-kwp-max" value="${c.kwp_maximo_automatico}" /></label>
       </div>`;
@@ -427,7 +427,6 @@ export function mountAdmin(root) {
         codigo: `SERVICO_${Date.now().toString(36).slice(-4).toUpperCase()}`,
         descricao: 'Novo serviço',
         fora_plano: 0,
-        com_plano: 0,
         tipo_calculo: 'FIXO',
         presencial: false,
       });

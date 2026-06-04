@@ -1,11 +1,11 @@
 {
-  "tenant": "SUBSTITUA_TENANT_GRONER",
-  "origemId": null,
-  "tipoProjetoId": null,
+  "tenant": "eletroclima",
+  "origemId": 57,
+  "tipoProjetoId": 223,
   "preVenda": {
-    "origemId": 0,
-    "tipoProjetoId": 0,
-    "notas": "Preencha origem e tipo Pré-venda do CRM Eletroclima"
+    "origemId": 57,
+    "tipoProjetoId": 223,
+    "notas": "Origem e tipo Pré-venda — confirme IDs no CRM Eletroclima"
   },
   "abaDinamicaId": 2,
   "camposPersonalizados": {
@@ -18,5 +18,5 @@
     "plano": 0,
     "mensalidade": 0
   },
-  "notas": "Substitua os IDs pelos campos personalizados do negócio na Groner deste tenant"
+  "notas": "Preencha os IDs dos campos personalizados do negócio Eletroclima (GET /api/CampoPersonalizado)"
 }

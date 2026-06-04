@@ -1,5 +1,6 @@
 import html2pdf from 'html2pdf.js';
 import { LOGO_URL, LOGO_ALT, getRodapePdf, getVendedorPadrao, getNomeCurto } from './cliente-config.js';
+import { getFormasPagamento } from './pricing.js';
 
 const PDF_RENDER_ID = 'pdf-render-host';
 
@@ -203,10 +204,16 @@ export function montarHtmlProposta(dados) {
       <section class="pdf-section pdf-obs">
         <h2>Condições</h2>
         <ul>
-          <li>Valores de mensalidade válidos para usinas em raio de até 50 km da base operacional.</li>
-          <li>Deslocamento acima de 50 km conforme tabela comercial vigente.</li>
+          <li>Deslocamento: 0–50 km isento; 51–200 km R$ 1,50/km; 201–400 km R$ 2,00/km; 401–600 km R$ 2,50/km; acima de 600 km sob consulta.</li>
+          <li>Serviços presenciais incluem taxa de deslocamento conforme distância da usina à base.</li>
+          <li>Usinas acima de 500 kWp: mensalidade sob consulta comercial.</li>
           <li>Proposta válida por ${validadeDias} dias a partir da emissão.</li>
-          <li>Usinas acima de 50 kWp ou clientes comerciais/industriais podem requerer negociação personalizada.</li>
+        </ul>
+        <h2>Formas de pagamento</h2>
+        <ul>
+          ${(getFormasPagamento().length ? getFormasPagamento() : ['Pix ou Transferência', 'Cartão de crédito', 'Recorrente no cartão'])
+            .map((f) => `<li>${f}</li>`)
+            .join('')}
         </ul>
       </section>
 

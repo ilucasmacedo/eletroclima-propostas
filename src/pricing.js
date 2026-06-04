@@ -8,9 +8,28 @@ import {
 } from './config-store.js';
 
 const COBERTURAS_PADRAO = {
-  BASICO: ['Monitoramento online', 'App do cliente', 'Relatório mensal básico'],
-  GOLD: ['Tudo do Básico', 'Suporte técnico remoto', 'Histórico de geração'],
-  PREMIUM: ['Tudo do Gold', 'Prioridade no atendimento', 'Visitas programadas'],
+  ACESSO: [
+    'Acesso Premium ao App de monitoramento',
+    'Alertas de falhas',
+    'Relatório mensal de geração',
+  ],
+  PADRAO: [
+    'Acesso Premium ao App de monitoramento',
+    'Alertas de falhas',
+    'Relatório de geração e consumo',
+    'Suporte técnico remoto',
+    'Análise de faturas',
+    'Desconto de 5% em serviços avulsos',
+  ],
+  PREMIUM: [
+    'Acesso Premium ao App de monitoramento',
+    'Alertas de falhas',
+    'Relatório de geração e consumo',
+    'Suporte técnico remoto',
+    'Análise de faturas',
+    'Prioridade no atendimento',
+    'Desconto de 10% em serviços avulsos',
+  ],
 };
 
 let activeConfig = loadStoredConfig(defaultConfig);
@@ -34,6 +53,7 @@ function rebuildDerived(config) {
         ...plano,
         codigo,
         descontoAvulso: Boolean(plano.desconto_avulso),
+        percentualDescontoAvulso: Number(plano.percentual_desconto_avulso) || 0,
         coberturas: plano.coberturas ?? COBERTURAS_PADRAO[codigo] ?? [],
       },
     ]),
@@ -56,8 +76,7 @@ function rebuildDerived(config) {
     codigo: s.codigo,
     descricao: s.descricao,
     fora: s.fora_plano,
-    com: s.com_plano,
-    tipo: s.tipo_calculo,
+    tipo: s.tipo_calculo === 'POR_MODULO' ? 'POR_PLACA' : s.tipo_calculo,
     presencial: s.presencial,
     keyword: s.keyword ?? s.descricao.split(' ').pop()?.toLowerCase() ?? s.codigo,
   }));
@@ -111,6 +130,22 @@ export function temPlanoContratado(plano) {
 
 export function planoTemDescontoAvulso(plano) {
   return Boolean(PLANOS[plano]?.descontoAvulso);
+}
+
+export function getPercentualDescontoAvulso(plano) {
+  return PLANOS[plano]?.percentualDescontoAvulso ?? 0;
+}
+
+export function getFormasPagamento() {
+  return activeConfig.formas_pagamento ?? [];
+}
+
+export function precoUnitarioServico(servico, plano, aplicarDesconto) {
+  if (servico.tipo === 'PERCENTUAL') return servico.fora;
+  if (!aplicarDesconto) return servico.fora;
+  const pct = getPercentualDescontoAvulso(plano);
+  if (!pct) return servico.fora;
+  return arredondar(servico.fora * (1 - pct / 100));
 }
 
 export function buscarFaixaKwp(kwp) {
@@ -169,8 +204,8 @@ export function calcularMensalidade(kwp, plano) {
 }
 
 export function calcularServico(servico, opts) {
-  const { temPlanoAtivo, qtdPlacas, valorContrato, distanciaKm, incluirDeslocamento } = opts;
-  const precoBase = temPlanoAtivo ? servico.com : servico.fora;
+  const { plano, aplicarDescontoPlano, qtdPlacas, valorContrato, distanciaKm, incluirDeslocamento } = opts;
+  const precoBase = precoUnitarioServico(servico, plano, aplicarDescontoPlano);
   let subtotal = 0;
 
   switch (servico.tipo) {
@@ -221,8 +256,6 @@ export function calcularProposta(input) {
     servicosSelecionados = [],
     qtdPlacas = 0,
     valorContrato = 0,
-    valorInvestimento = 0,
-    percentualInvestimento = constantes.percentual_investimento_padrao,
     incluirDeslocamentoGlobal = true,
     temPlanoAtivo = false,
   } = input;
@@ -257,7 +290,8 @@ export function calcularProposta(input) {
     const servico = SERVICOS.find((s) => s.codigo === codigo);
     if (!servico) continue;
     const result = calcularServico(servico, {
-      temPlanoAtivo: usarPrecoComPlano,
+      plano,
+      aplicarDescontoPlano: usarPrecoComPlano,
       qtdPlacas,
       valorContrato,
       distanciaKm,
@@ -285,17 +319,6 @@ export function calcularProposta(input) {
       subtotal: deslocamento.valor,
     });
     totalAvulsos += deslocamento.valor;
-  }
-
-  if (valorInvestimento > 0) {
-    const taxaInv = arredondar(valorInvestimento * (percentualInvestimento / 100));
-    itens.push({
-      tipo: 'INVESTIMENTO',
-      codigo: 'TAXA_INVESTIMENTO',
-      descricao: `Taxa sobre investimento (${percentualInvestimento}%)`,
-      subtotal: taxaInv,
-    });
-    totalAvulsos += taxaInv;
   }
 
   totalAvulsos = arredondar(totalAvulsos);

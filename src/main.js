@@ -8,6 +8,9 @@ import {
   calcularProposta,
   planoTemDescontoAvulso,
   temPlanoContratado,
+  getPercentualDescontoAvulso,
+  precoUnitarioServico,
+  getFormasPagamento,
   precosComparativoPlanos,
   formatarMoeda,
   gerarNumeroProposta,
@@ -92,7 +95,6 @@ function getFormData() {
       qtdPlacas: parseInt(document.getElementById('usina-placas').value, 10) || 0,
       distanciaKm: parseFloat(document.getElementById('usina-distancia').value) || 0,
       endereco: document.getElementById('usina-endereco').value.trim(),
-      valorInvestimento: parseFloat(document.getElementById('usina-investimento').value) || 0,
       valorContrato: parseFloat(document.getElementById('usina-contrato').value) || 0,
     },
     plano: els.planoSelecionado.value,
@@ -109,7 +111,6 @@ function getResultado() {
     servicosSelecionados: data.servicos,
     qtdPlacas: data.usina.qtdPlacas,
     valorContrato: data.usina.valorContrato,
-    valorInvestimento: data.usina.valorInvestimento,
   });
 }
 
@@ -146,7 +147,7 @@ function renderPlanos() {
     comparativo
       .map((plano) => {
         const isSelected = plano.codigo === selecionado;
-        const planoRecomendado = CONFIG_PRECIFICACAO.constantes.plano_recomendado || 'GOLD';
+        const planoRecomendado = CONFIG_PRECIFICACAO.constantes.plano_recomendado || 'PADRAO';
         const isRecomendado = plano.codigo === planoRecomendado;
         const precoHtml = plano.sob_consulta
           ? '<p class="plano-preco sob-consulta">Sob consulta</p>'
@@ -192,16 +193,20 @@ function renderPlanos() {
 
 function renderServicos() {
   const data = getFormData();
-  const comPlano = planoTemDescontoAvulso(data.plano);
+  const aplicarDesconto =
+    planoTemDescontoAvulso(data.plano) && temPlanoContratado(data.plano);
   const selecionados = new Set(
     [...document.querySelectorAll('.servico-check:checked')].map((cb) => cb.value),
   );
 
   els.servicosGrid.innerHTML = SERVICOS.map((s) => {
-    const preco = comPlano ? s.com : s.fora;
+    const preco = precoUnitarioServico(s, data.plano, aplicarDesconto);
     const sufixo =
-      s.tipo === 'POR_PLACA' ? '/placa' : s.tipo === 'PERCENTUAL' ? ' do contrato' : '';
-    const labelPreco = comPlano ? 'com desconto de plano' : 'valor tabelado';
+      s.tipo === 'POR_PLACA' ? '/módulo' : s.tipo === 'PERCENTUAL' ? ' do contrato' : '';
+    const labelPreco = aplicarDesconto
+      ? `com plano (−${getPercentualDescontoAvulso(data.plano)}%)`
+      : 'valor tabelado';
+    const extra = s.presencial ? ' + deslocamento' : '';
     const checked = selecionados.has(s.codigo) ? 'checked' : '';
 
     return `
@@ -209,7 +214,7 @@ function renderServicos() {
       <input type="checkbox" class="servico-check" value="${s.codigo}" ${checked} />
       <div>
         <strong>${s.descricao}</strong>
-        <span>${formatarMoeda(preco)}${sufixo} (${labelPreco})</span>
+        <span>${formatarMoeda(preco)}${sufixo}${extra} (${labelPreco})</span>
       </div>
     </label>`;
   }).join('');
@@ -259,6 +264,10 @@ function renderResumo() {
     <div class="resumo-itens">
       <h3>Itens da proposta</h3>
       ${itensHtml}
+    </div>
+    <div class="resumo-pagamento">
+      <h3>Formas de pagamento</h3>
+      <ul>${getFormasPagamento().map((f) => `<li>${f}</li>`).join('')}</ul>
     </div>`;
 }
 
