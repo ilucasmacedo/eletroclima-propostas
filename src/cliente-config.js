@@ -1,21 +1,33 @@
 import cliente from '../config/cliente.json';
+import { logoUrl as logoBundledUrl, logoSvgInline } from './brand-assets.js';
 
 export const CLIENTE = cliente;
 
-export const LOGO_URL = cliente.marca?.logoUrl || '';
+/** Logo empacotada pelo Vite — sempre disponível no build */
+export const LOGO_URL = logoBundledUrl || cliente.marca?.logoUrl || '';
 export const LOGO_ALT = cliente.marca?.logoAlt || cliente.nome || 'Logo';
+export const LOGO_SVG_INLINE = logoSvgInline;
 
-/** URL absoluta da logo — html2pdf/html2canvas exige origem resolvida */
-export function resolveLogoUrl(baseUrl) {
-  const url = LOGO_URL;
-  if (!url) return '';
-  if (/^(https?:|data:|\/\/)/.test(url)) return url;
-  const origin =
-    baseUrl ||
-    (typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '');
-  if (!origin) return url.startsWith('/') ? url : `/${url}`;
-  const path = url.startsWith('/') ? url : `/${url}`;
-  return `${origin}${path}`;
+/** URL para img na sidebar (asset do bundle) */
+export function resolveLogoUrl() {
+  if (LOGO_URL) return LOGO_URL;
+  const url = cliente.marca?.logoUrl || '';
+  if (!url || /^(https?:|data:|\/\/)/.test(url)) return url;
+  if (typeof window !== 'undefined' && window.location?.origin) {
+    const path = url.startsWith('/') ? url : `/${url}`;
+    return `${window.location.origin}${path}`;
+  }
+  return url;
+}
+
+/** Logo inline no PDF — html2canvas não renderiza SVG externo de forma confiável */
+export function getLogoHtmlPdf() {
+  if (LOGO_SVG_INLINE) {
+    return `<div class="pdf-logo-inline" aria-hidden="true">${LOGO_SVG_INLINE}</div>`;
+  }
+  const src = resolveLogoUrl();
+  if (!src) return '';
+  return `<img class="pdf-logo-img" src="${src}" alt="${LOGO_ALT}" />`;
 }
 
 export function getTituloPropostaPdf() {

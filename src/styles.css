@@ -631,6 +631,7 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
   border-bottom: 2px solid #f5a623;
@@ -638,12 +639,25 @@ body {
 
 .pdf-brand {
   display: flex;
-  gap: 1rem;
+  gap: 1.25rem;
   align-items: center;
+  flex: 1;
+  min-width: 0;
+}
+
+.pdf-logo-inline {
+  flex-shrink: 0;
+  line-height: 0;
+}
+
+.pdf-logo-inline svg {
+  height: 52px;
+  width: auto;
+  display: block;
 }
 
 .pdf-logo-img {
-  height: 56px;
+  height: 52px;
   width: auto;
   max-width: 220px;
   object-fit: contain;

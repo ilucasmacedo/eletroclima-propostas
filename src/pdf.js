@@ -6,7 +6,7 @@ import {
   getSubtituloProposta,
   getTituloPropostaPdf,
   getFormasPagamentoPdf,
-  resolveLogoUrl,
+  getLogoHtmlPdf,
 } from './cliente-config.js';
 import { getFormasPagamento } from './pricing.js';
 
@@ -31,6 +31,7 @@ function getRenderHost() {
 
 async function aguardarImagens(elemento) {
   const imgs = elemento.querySelectorAll('img');
+  if (!imgs.length) return;
   await Promise.all(
     Array.from(imgs).map(
       (img) =>
@@ -168,7 +169,7 @@ export function montarHtmlProposta(dados) {
     <div class="pdf-proposta">
       <header class="pdf-header">
         <div class="pdf-brand">
-          <img class="pdf-logo-img" src="${resolveLogoUrl()}" alt="${LOGO_ALT}" crossorigin="anonymous" />
+          ${getLogoHtmlPdf()}
           <div class="pdf-titulo-doc">
             <h1>${getTituloPropostaPdf()}</h1>
             <p class="pdf-subtitulo-doc">${getSubtituloProposta()}</p>
