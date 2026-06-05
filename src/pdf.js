@@ -1,5 +1,13 @@
 import html2pdf from 'html2pdf.js';
-import { LOGO_URL, LOGO_ALT, getRodapePdf, getVendedorPadrao, getNomeCurto } from './cliente-config.js';
+import {
+  LOGO_ALT,
+  getRodapePdf,
+  getVendedorPadrao,
+  getSubtituloProposta,
+  getTituloPropostaPdf,
+  getFormasPagamentoPdf,
+  resolveLogoUrl,
+} from './cliente-config.js';
 import { getFormasPagamento } from './pricing.js';
 
 const PDF_RENDER_ID = 'pdf-render-host';
@@ -21,9 +29,29 @@ function getRenderHost() {
   return host;
 }
 
-async function aguardarRender() {
+async function aguardarImagens(elemento) {
+  const imgs = elemento.querySelectorAll('img');
+  await Promise.all(
+    Array.from(imgs).map(
+      (img) =>
+        new Promise((resolve) => {
+          if (img.complete && img.naturalWidth > 0) {
+            resolve();
+            return;
+          }
+          img.addEventListener('load', () => resolve(), { once: true });
+          img.addEventListener('error', () => resolve(), { once: true });
+        }),
+    ),
+  );
+}
+
+async function aguardarRender(elemento) {
   if (document.fonts?.ready) {
     await document.fonts.ready;
+  }
+  if (elemento) {
+    await aguardarImagens(elemento);
   }
   await new Promise((resolve) => {
     requestAnimationFrame(() => requestAnimationFrame(resolve));
@@ -61,7 +89,7 @@ export async function gerarPropostaPdfBlob(elemento) {
   clone.style.width = '100%';
   host.appendChild(clone);
 
-  await aguardarRender();
+  await aguardarRender(clone);
 
   const gerarPdf = getHtml2Pdf();
   if (typeof gerarPdf !== 'function') {
@@ -84,6 +112,19 @@ export async function exportarPropostaPdf(elemento, nomeArquivo) {
   link.download = nomeArquivo;
   link.click();
   URL.revokeObjectURL(url);
+}
+
+function descricaoItemCliente(item) {
+  if (item.tipo === 'DESLOCAMENTO' || item.codigo === 'DESLOCAMENTO') {
+    return 'Taxa de deslocamento';
+  }
+  return item.descricao;
+}
+
+function formasPagamentoProposta() {
+  const doConfig = getFormasPagamento().filter((f) => !/recorrente/i.test(f));
+  if (doConfig.length) return doConfig;
+  return getFormasPagamentoPdf();
 }
 
 export function montarHtmlProposta(dados) {
@@ -113,7 +154,7 @@ export function montarHtmlProposta(dados) {
     .map(
       (item) => `
       <tr>
-        <td>${item.descricao}</td>
+        <td>${descricaoItemCliente(item)}</td>
         <td class="valor">${formatMoeda(item.subtotal)}</td>
       </tr>`,
     )
@@ -127,10 +168,10 @@ export function montarHtmlProposta(dados) {
     <div class="pdf-proposta">
       <header class="pdf-header">
         <div class="pdf-brand">
-          <img class="pdf-logo-img" src="${LOGO_URL}" alt="${LOGO_ALT}" crossorigin="anonymous" />
-          <div>
-            <h1>Proposta Comercial</h1>
-            <p>Monitoramento e Gestão Solar</p>
+          <img class="pdf-logo-img" src="${resolveLogoUrl()}" alt="${LOGO_ALT}" crossorigin="anonymous" />
+          <div class="pdf-titulo-doc">
+            <h1>${getTituloPropostaPdf()}</h1>
+            <p class="pdf-subtitulo-doc">${getSubtituloProposta()}</p>
           </div>
         </div>
         <div class="pdf-meta">
@@ -149,16 +190,6 @@ export function montarHtmlProposta(dados) {
           <p><span>CPF/CNPJ:</span> ${cliente.documento || '—'}</p>
           <p><span>E-mail:</span> ${cliente.email || '—'}</p>
           <p><span>Telefone:</span> ${cliente.telefone || '—'}</p>
-        </div>
-      </section>
-
-      <section class="pdf-section">
-        <h2>Dados da Usina</h2>
-        <div class="pdf-grid">
-          <p><span>Potência:</span> ${usina.kwp} kWp</p>
-          <p><span>Placas:</span> ${usina.qtdPlacas || '—'}</p>
-          <p><span>Endereço:</span> ${usina.endereco || '—'}</p>
-          <p><span>Distância da base:</span> ${usina.distanciaKm} km</p>
         </div>
       </section>
 
@@ -196,7 +227,7 @@ export function montarHtmlProposta(dados) {
           <strong>${formatMoeda(resultado.totais.avulsos)}</strong>
         </div>
         <div class="pdf-total-row destaque">
-          <span>Total 1ª cobrança</span>
+          <span>Valor total</span>
           <strong>${formatMoeda(resultado.totais.primeira_cobranca)}</strong>
         </div>
       </section>
@@ -204,16 +235,11 @@ export function montarHtmlProposta(dados) {
       <section class="pdf-section pdf-obs">
         <h2>Condições</h2>
         <ul>
-          <li>Deslocamento: 0–50 km isento; 51–200 km R$ 1,50/km; 201–400 km R$ 2,00/km; 401–600 km R$ 2,50/km; acima de 600 km sob consulta.</li>
-          <li>Serviços presenciais incluem taxa de deslocamento conforme distância da usina à base.</li>
-          <li>Usinas acima de 500 kWp: mensalidade sob consulta comercial.</li>
           <li>Proposta válida por ${validadeDias} dias a partir da emissão.</li>
         </ul>
         <h2>Formas de pagamento</h2>
         <ul>
-          ${(getFormasPagamento().length ? getFormasPagamento() : ['Pix ou Transferência', 'Cartão de crédito', 'Recorrente no cartão'])
-            .map((f) => `<li>${f}</li>`)
-            .join('')}
+          ${formasPagamentoProposta().map((f) => `<li>${f}</li>`).join('')}
         </ul>
       </section>
 

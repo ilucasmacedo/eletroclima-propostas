@@ -95,8 +95,7 @@
 
   "formas_pagamento": [
     "Pix ou Transferência",
-    "Cartão de crédito",
-    "Recorrente no cartão"
+    "Cartão de crédito"
   ],
 
   "limites": [
@@ -138,7 +137,7 @@
     },
     "PADRAO": {
       "codigo": "PADRAO",
-      "nome": "Plano Padrão",
+      "nome": "Plano Gold",
       "tagline": "Acompanhamento operacional completo",
       "desconto_avulso": true,
       "percentual_desconto_avulso": 5,

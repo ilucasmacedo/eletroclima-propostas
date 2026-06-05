@@ -6,11 +6,13 @@
   "produto": {
     "tituloSidebar": "Propostas",
     "subtituloSidebar": "Gestão Energética",
+    "subtituloProposta": "Monitoramento e Gestão Energética",
+    "tituloPdf": "Proposta Comercial",
     "sistemaNome": "Eletroclima Propostas"
   },
   "marca": {
-    "logoUrl": "https://url-da-logo-eletroclima.png",
-    "logoAlt": "Eletroclima",
+    "logoUrl": "/logo-eletroclima.svg",
+    "logoAlt": "Eletroclima Energia",
     "site": "eletroclima.com.br",
     "email": "contato@eletroclima.com.br",
     "vendedorPadrao": "Equipe Comercial Eletroclima"

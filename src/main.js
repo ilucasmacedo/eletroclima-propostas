@@ -23,7 +23,7 @@ import { initGronerBusca, mostrarLinkNegocioGroner, montarUrlNegocioGroner, apli
 import { sincronizarDescricaoPropostaGroner } from './groner-sync.js';
 import { garantirContatoPropostaGroner } from './groner-garantir-contato.js';
 import { criarProjetoLeadGroner } from './groner-criar-projeto.js';
-import { LOGO_URL, LOGO_ALT } from './brand.js';
+import { LOGO_ALT, resolveLogoUrl } from './brand.js';
 import { tituloPagina, getVendedorPadrao, CLIENTE } from './cliente-config.js';
 
 const getValidadeDias = () => CONFIG_PRECIFICACAO.constantes.validade_proposta_dias;
@@ -553,7 +553,7 @@ async function baixarPdf(dadosExistentes) {
 function init() {
   const brandLogo = document.querySelector('.brand-logo-img');
   if (brandLogo) {
-    brandLogo.src = LOGO_URL;
+    brandLogo.src = resolveLogoUrl();
     brandLogo.alt = LOGO_ALT;
   }
 

@@ -163,7 +163,7 @@
 <header>
   <div>
     <h1>MHZ — CRM espelho do index.html</h1>
-    <p>Fonte: pricing.js + precificacao.json · Planos: Acesso, Padrão, Premium</p>
+    <p>Fonte: pricing.js + precificacao.json · Planos: Acesso, Gold, Premium</p>
   </div>
 </header>
 
@@ -202,7 +202,7 @@
   <div class="panel" id="panel-servico">
     <div class="banner">
       <strong>Radio/checklist retornam string completa.</strong> Use <code>[[Campo]] LIKE '%palavra%'</code> — a palavra deve existir no texto que o CRM devolve (ex.: <code>%Acesso%</code>, <code>%Padrão%</code>).
-      Desconto automático via <code>[[CampoTemDescontoAvulsoProjeto]]</code> (Padrão/Premium residencial, kWp ≤ 50).
+      Desconto automático via <code>[[CampoTemDescontoAvulsoProjeto]]</code> (Gold/Premium residencial, kWp ≤ 50).
     </div>
     <div id="lista-checklist"></div>
   </div>
@@ -252,7 +252,7 @@ const ENTRADA = [
 const PLANO_TEXTO = {
   NENHUM: ['NENHUM', 'Nenhum', 'Sem plano'],
   ACESSO: ['ACESSO', 'Acesso', 'Basic'],
-  PADRAO: ['PADRAO', 'Padrao', 'Padrão'],
+  PADRAO: ['PADRAO', 'Padrao', 'Padrão', 'Gold', 'GOLD'],
   PREMIUM: ['PREMIUM', 'Premium'],
 };
 
@@ -315,7 +315,7 @@ const FORMULA_TOTAL_SERVICOS = buildGiantFormulaServicos();
 
 const CALCULADO = [
   { ordem: 1, nome: 'Mensalidade recorrente', codigo: 'Mensalidade', variavel: '[[CampoMensalidadeProjeto]]', depende: ['[[CampoKwpProjeto]]', '[[CampoPlanoProjeto]]'], descricao: 'Tabela faixas kWp × plano. kWp>50 ou NENHUM = 0.', formula: FORMULA_MENSALIDADE },
-  { ordem: 2, nome: 'Tem desconto avulso', codigo: 'TemDescontoAvulso', variavel: '[[CampoTemDescontoAvulsoProjeto]]', depende: ['[[CampoPlanoProjeto]]', '[[CampoKwpProjeto]]'], descricao: '1 = Padrão ou Premium + kWp≤50.', formula: FORMULA_TEM_DESCONTO },
+  { ordem: 2, nome: 'Tem desconto avulso', codigo: 'TemDescontoAvulso', variavel: '[[CampoTemDescontoAvulsoProjeto]]', depende: ['[[CampoPlanoProjeto]]', '[[CampoKwpProjeto]]'], descricao: '1 = Gold ou Premium + kWp≤50.', formula: FORMULA_TEM_DESCONTO },
   { ordem: 3, nome: 'Taxa de deslocamento', codigo: 'Deslocamento', variavel: '[[CampoDeslocamentoProjeto]]', depende: ['[[CampoKmProjeto]]'], descricao: 'ceil(km) × taxa. Isento ≤50 km.', formula: FORMULA_DESLOCAMENTO, faixas: [['≤50 km', 'R$ 0'], ['51-200', 'R$ 1,50/km'], ['201-400', 'R$ 2,00/km'], ['401-600', 'R$ 2,50/km']] },
   { ordem: 4, nome: 'Total serviços avulsos', codigo: 'TotalServicosAvulsos', variavel: '[[CampoTotalServicosAvulsosProjeto]]', depende: [CHECKLIST_VAR, '[[CampoTemDescontoAvulsoProjeto]]', '[[CampoQtdPlacasProjeto]]', '[[CampoValorContratoProjeto]]'], descricao: 'Soma dos 9 serviços do checklist.', formula: FORMULA_TOTAL_SERVICOS },
   { ordem: 5, nome: 'Taxa sobre investimento', codigo: 'TaxaInvestimento', variavel: '[[CampoTaxaInvestimentoProjeto]]', depende: ['[[CampoValorInvestimentoProjeto]]'], descricao: '4,5% sobre valor do investimento.', formula: FORMULA_TAXA_INVEST },
@@ -365,10 +365,10 @@ function calcProposta({ kwp, plano, km, servicos = [], placas = 0, valorContrato
 
 const CASOS_TESTE = [
   { nome: '8,5 kWp Acesso 80 km', kwp: 8.5, plano: 'ACESSO', km: 80, expMens: 14.9, expDesl: 120, expPrimeira: 134.9 },
-  { nome: '7 kWp Padrão 100 km', kwp: 7, plano: 'PADRAO', km: 100, expMens: 49.9, expDesl: 150, expPrimeira: 199.9 },
+  { nome: '7 kWp Gold 100 km', kwp: 7, plano: 'PADRAO', km: 100, expMens: 49.9, expDesl: 150, expPrimeira: 199.9 },
   { nome: '25 kWp Premium 250 km', kwp: 25, plano: 'PREMIUM', km: 250, expMens: 179.9, expDesl: 500, expPrimeira: 679.9 },
   { nome: '4 kWp Acesso 30 km', kwp: 4, plano: 'ACESSO', km: 30, expMens: 9.9, expDesl: 0 },
-  { nome: '55 kWp Padrão (sob consulta)', kwp: 55, plano: 'PADRAO', km: 40, expMens: 0, expDesl: 0 },
+  { nome: '55 kWp Gold (sob consulta)', kwp: 55, plano: 'PADRAO', km: 40, expMens: 0, expDesl: 0 },
 ];
 
 // ═══ Render ═══
@@ -408,7 +408,7 @@ function renderTabelas() {
   let kwpRows = FAIXAS_KWP.map(f => `<tr><td>até ${f.max} kWp</td><td>R$ ${f.ACESSO.toFixed(2).replace('.',',')}</td><td>R$ ${f.PADRAO.toFixed(2).replace('.',',')}</td><td>R$ ${f.PREMIUM.toFixed(2).replace('.',',')}</td></tr>`).join('');
   document.getElementById('lista-tabelas').innerHTML = `
     <div class="section-label">Faixas kWp × plano (mensalidade R$/mês)</div>
-    <table class="table-ref"><thead><tr><th>Faixa</th><th>Acesso</th><th>Padrão</th><th>Premium</th></tr></thead><tbody>${kwpRows}<tr><td>&gt; 50 kWp</td><td colspan="3">Sob consulta</td></tr></tbody></table>
+    <table class="table-ref"><thead><tr><th>Faixa</th><th>Acesso</th><th>Gold</th><th>Premium</th></tr></thead><tbody>${kwpRows}<tr><td>&gt; 50 kWp</td><td colspan="3">Sob consulta</td></tr></tbody></table>
     <div class="section-label" style="margin-top:14px">Deslocamento (distância total acima de 50 km)</div>
     <table class="table-ref"><thead><tr><th>Distância</th><th>Taxa/km</th></tr></thead><tbody><tr><td>≤ 50 km</td><td>R$ 0</td></tr><tr><td>51 – 200 km</td><td>R$ 1,50</td></tr><tr><td>201 – 400 km</td><td>R$ 2,00</td></tr><tr><td>401 – 600 km</td><td>R$ 2,50</td></tr></tbody></table>
   `;

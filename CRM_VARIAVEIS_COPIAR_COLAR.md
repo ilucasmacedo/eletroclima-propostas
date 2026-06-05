@@ -46,7 +46,7 @@ if([[CampoKmProjeto]] <= 50, 0, Round(Ceiling([[CampoKmProjeto]]) * if([[CampoKm
 ## Tem desconto avulso
 
 ```
-if([[CampoKwpProjeto]] > 50, 0, if([[CampoPlanoProjeto]] LIKE '%PADRAO%', 1, if([[CampoPlanoProjeto]] LIKE '%PREMIUM%', 1, 0)))
+if([[CampoKwpProjeto]] > 50, 0, if([[CampoPlanoProjeto]] LIKE '%Gold%' OR [[CampoPlanoProjeto]] LIKE '%PADRAO%', 1, if([[CampoPlanoProjeto]] LIKE '%PREMIUM%', 1, 0)))
 ```
 
 ---
