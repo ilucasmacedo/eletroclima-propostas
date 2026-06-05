@@ -38,7 +38,7 @@
 ## Deslocamento (referência rápida)
 
 ```
-if([[CampoKmProjeto]] <= 50, 0, Round((Ceiling([[CampoKmProjeto]]) - 50) * if([[CampoKmProjeto]] <= 200, 2.4, if([[CampoKmProjeto]] <= 400, 3.2, 4)), 2))
+if([[CampoKmProjeto]] <= 50, 0, Round(Ceiling([[CampoKmProjeto]]) * if([[CampoKmProjeto]] <= 200, 1.5, if([[CampoKmProjeto]] <= 400, 2, 2.5)), 2))
 ```
 
 ---

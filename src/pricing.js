@@ -165,7 +165,7 @@ export function calcularDeslocamento(distanciaKm) {
   const { raio_base_km, distancia_maxima_automatica } = getConstantes();
 
   if (km <= raio_base_km) {
-    return { km, km_excedente: 0, taxa: 0, valor: 0, a_combinar: false };
+    return { km, km_cobrados: 0, taxa: 0, valor: 0, a_combinar: false };
   }
 
   const faixa = FAIXAS_DESLOCAMENTO.find(
@@ -173,12 +173,11 @@ export function calcularDeslocamento(distanciaKm) {
   );
 
   if (!faixa) {
-    return { km, km_excedente: 0, taxa: 0, valor: 0, a_combinar: km > distancia_maxima_automatica };
+    return { km, km_cobrados: 0, taxa: 0, valor: 0, a_combinar: km > distancia_maxima_automatica };
   }
 
-  const kmExcedente = km - raio_base_km;
-  const valor = arredondar(kmExcedente * faixa.taxa);
-  return { km, km_excedente: kmExcedente, taxa: faixa.taxa, valor, a_combinar: false };
+  const valor = arredondar(km * faixa.taxa);
+  return { km, km_cobrados: km, taxa: faixa.taxa, valor, a_combinar: false };
 }
 
 export function calcularMensalidade(kwp, plano) {
@@ -315,7 +314,7 @@ export function calcularProposta(input) {
     itens.push({
       tipo: 'DESLOCAMENTO',
       codigo: 'DESLOCAMENTO',
-      descricao: `Taxa de deslocamento (${deslocamento.km_excedente} km × R$ ${deslocamento.taxa.toFixed(2).replace('.', ',')}/km)`,
+      descricao: `Taxa de deslocamento (${deslocamento.km_cobrados} km × R$ ${deslocamento.taxa.toFixed(2).replace('.', ',')}/km)`,
       subtotal: deslocamento.valor,
     });
     totalAvulsos += deslocamento.valor;

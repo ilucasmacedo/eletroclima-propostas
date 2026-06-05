@@ -232,7 +232,7 @@ function renderAlertas(resultado) {
   }
   if (resultado.deslocamento.valor > 0) {
     alertas.push(
-      `Deslocamento: ${resultado.deslocamento.km_excedente} km excedentes × ${formatarMoeda(resultado.deslocamento.taxa)}/km = ${formatarMoeda(resultado.deslocamento.valor)}`,
+      `Deslocamento: ${resultado.deslocamento.km_cobrados} km × ${formatarMoeda(resultado.deslocamento.taxa)}/km = ${formatarMoeda(resultado.deslocamento.valor)}`,
     );
   }
 

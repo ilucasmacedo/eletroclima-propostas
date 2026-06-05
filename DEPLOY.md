@@ -1,38 +1,15 @@
-# Deploy — GitHub Pages + Vercel
+# Deploy — Vercel (recomendado)
 
-O mesmo repositório pode publicar nos **dois** lugares. Cada push no `main` atualiza os dois (se estiverem conectados).
+**Use a Vercel em produção.** É o único ambiente onde as rotas `/api/groner/*` (integração CRM) funcionam.
 
 | Onde | URL | Observação |
 |------|-----|------------|
-| **GitHub Pages** | `https://ilucasmacedo.github.io/eletroclima-propostas/` | Usa subpasta `/eletroclima-propostas/` (automático no Actions) |
-| **Vercel** | `https://eletroclima-propostas.vercel.app` (ou domínio próprio) | Build na raiz `/` — **API Groner funciona aqui** |
+| **Vercel** | `https://eletroclima-propostas.vercel.app` (ou domínio próprio) | Build na raiz `/` — **API Groner** |
+| **GitHub Pages** | Só se o repo for **público** ou conta **Pro** | Repositório atual é **privado** → Pages não habilita no plano gratuito |
 
 ---
 
-## GitHub Pages
-
-O site é publicado automaticamente a cada push na branch `main` (ou `master`).
-
-### Configuração inicial (uma vez)
-
-1. Repositório: [github.com/ilucasmacedo/eletroclima-propostas](https://github.com/ilucasmacedo/eletroclima-propostas)
-2. No GitHub: **Settings → Pages → Build and deployment**
-   - Source: **GitHub Actions**
-3. O workflow `.github/workflows/deploy.yml` roda sozinho a cada push.
-
-### Atualizar
-
-```bash
-git add .
-git commit -m "Descrição da alteração"
-git push
-```
-
-Acompanhe em **Actions** no GitHub.
-
----
-
-## Vercel
+## Vercel (passo a passo)
 
 ### Configuração inicial (uma vez)
 
@@ -44,7 +21,9 @@ Acompanhe em **Actions** no GitHub.
    - **Não** defina `BASE_PATH` — na Vercel o site roda na raiz.
 4. Clique em **Deploy**.
 
-Pronto. Cada `git push` no `main` dispara deploy na Vercel e no GitHub Pages.
+Pronto. Cada `git push` no `main` dispara deploy na Vercel (se o projeto estiver importado).
+
+**Produção atual:** https://eletroclima-propostas.vercel.app/
 
 ### Deploy manual (opcional)
 
@@ -100,12 +79,20 @@ npm run dev
 No PowerShell:
 
 ```powershell
-$env:BASE_PATH="/mhz-propostas/"
+$env:BASE_PATH="/eletroclima-propostas/"
 npm run build
 npm run preview
 ```
 
 Na Vercel, use `npm run build` sem `BASE_PATH`.
+
+---
+
+## GitHub Pages (opcional)
+
+O workflow `.github/workflows/deploy.yml` só funciona se o Pages estiver habilitado em **Settings → Pages → GitHub Actions**. Em repositório **privado** no plano gratuito, o GitHub retorna erro *"plan does not support GitHub Pages"* — use só a Vercel.
+
+Para publicar no Pages: torne o repo público **ou** use GitHub Pro, habilite Pages com source **GitHub Actions** e rode o workflow manualmente em **Actions**.
 
 ---
 

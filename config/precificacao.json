@@ -188,9 +188,9 @@
 
   "faixas_deslocamento": [
     { "km_min": 0,   "km_max": 50,  "taxa_por_km": 0,   "observacao": "0 a 50 km — isento" },
-    { "km_min": 50,  "km_max": 200, "taxa_por_km": 1.5, "observacao": "51 a 200 km — R$ 1,50/km excedente" },
-    { "km_min": 200, "km_max": 400, "taxa_por_km": 2.0, "observacao": "201 a 400 km — R$ 2,00/km excedente" },
-    { "km_min": 400, "km_max": 600, "taxa_por_km": 2.5, "observacao": "401 a 600 km — R$ 2,50/km excedente" }
+    { "km_min": 50,  "km_max": 200, "taxa_por_km": 1.5, "observacao": "51 a 200 km — R$ 1,50/km (distância total)" },
+    { "km_min": 200, "km_max": 400, "taxa_por_km": 2.0, "observacao": "201 a 400 km — R$ 2,00/km (distância total)" },
+    { "km_min": 400, "km_max": 600, "taxa_por_km": 2.5, "observacao": "401 a 600 km — R$ 2,50/km (distância total)" }
   ],
 
   "servicos_avulsos": [
@@ -208,7 +208,7 @@
   "formulas": [
     {
       "codigo": "DESLOCAMENTO",
-      "expressao": "km_excedente = max(0, ceil(km) - 50); valor = km_excedente × taxa_faixa",
+      "expressao": "km = ceil(distancia); se km <= 50 → isento; senão valor = km × taxa_faixa",
       "condicoes": ["km <= 50 → isento", "km > 600 → sob consulta"]
     },
     {

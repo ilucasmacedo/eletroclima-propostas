@@ -195,7 +195,7 @@ export function mountAdmin(root) {
 
     return `
       <div class="admin-section-head">
-        <p>Taxa R$/km excedente (após raio base). Marque "∞" quando km_max for aberto.</p>
+        <p>Taxa R$/km sobre a distância total (acima do raio base isento). Marque "∞" quando km_max for aberto.</p>
         <button type="button" class="btn btn-secondary btn-sm" id="adm-add-desl">+ Faixa km</button>
       </div>
       <div class="admin-table-wrap">

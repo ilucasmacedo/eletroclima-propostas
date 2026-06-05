@@ -242,7 +242,7 @@ const FAIXAS_KWP = [
 const ENTRADA = [
   { nome: 'Potência (kWp)', codigo: 'Kwp', variavel: '[[CampoKwpProjeto]]', tipo: 'numero', obrigatorio: true, descricao: 'Potência da usina — usina-kwp no index.html. Usado na mensalidade (faixa kWp × plano)' },
   { nome: 'Nº de placas', codigo: 'QtdPlacas', variavel: '[[CampoQtdPlacasProjeto]]', tipo: 'numero', obrigatorio: false, descricao: 'Usado em Manutenção preventiva (R$/placa)' },
-  { nome: 'Distância da base (km)', codigo: 'Km', variavel: '[[CampoKmProjeto]]', tipo: 'numero', obrigatorio: true, descricao: 'Isento até 50 km; acima cobra km excedente × taxa da faixa' },
+  { nome: 'Distância da base (km)', codigo: 'Km', variavel: '[[CampoKmProjeto]]', tipo: 'numero', obrigatorio: true, descricao: 'Isento até 50 km; acima cobra distância total × taxa da faixa' },
   { nome: 'Plano', codigo: 'Plano', variavel: '[[CampoPlanoProjeto]]', tipo: 'radio', obrigatorio: true, opcoes: ['NENHUM', 'ACESSO', 'PADRAO', 'PREMIUM'], descricao: 'Retorna texto completo da opção (ex.: "Plano Acesso"). Fórmulas usam LIKE para buscar palavra-chave dentro do valor.' },
   { nome: 'Valor do investimento (R$)', codigo: 'ValorInvestimento', variavel: '[[CampoValorInvestimentoProjeto]]', tipo: 'moeda', obrigatorio: false, descricao: 'Preenchido manualmente quando aplicável. Base da taxa 4,5%' },
   { nome: 'Valor do contrato p/ seguro (R$)', codigo: 'ValorContrato', variavel: '[[CampoValorContratoProjeto]]', tipo: 'moeda', obrigatorio: false, descricao: 'Preenchido manualmente quando contratar seguro. Base: 2% ou 1,5%' },
@@ -278,7 +278,7 @@ const FORMULA_MENSALIDADE = `if([[CampoKwpProjeto]] > 50, 0, if(${matchPlano('NE
 
 const FORMULA_TEM_DESCONTO = `if([[CampoKwpProjeto]] > 50, 0, if(${matchPlano('PADRAO')}, 1, if(${matchPlano('PREMIUM')}, 1, 0)))`;
 
-const FORMULA_DESLOCAMENTO = `if([[CampoKmProjeto]] <= 50, 0, Round((Ceiling([[CampoKmProjeto]]) - 50) * if([[CampoKmProjeto]] <= 200, 2.4, if([[CampoKmProjeto]] <= 400, 3.2, 4)), 2))`;
+const FORMULA_DESLOCAMENTO = `if([[CampoKmProjeto]] <= 50, 0, Round(Ceiling([[CampoKmProjeto]]) * if([[CampoKmProjeto]] <= 200, 1.5, if([[CampoKmProjeto]] <= 400, 2, 2.5)), 2))`;
 
 const FORMULA_TAXA_INVEST = `if([[CampoValorInvestimentoProjeto]] > 0, Round([[CampoValorInvestimentoProjeto]] * 0.045, 2), 0)`;
 
@@ -316,7 +316,7 @@ const FORMULA_TOTAL_SERVICOS = buildGiantFormulaServicos();
 const CALCULADO = [
   { ordem: 1, nome: 'Mensalidade recorrente', codigo: 'Mensalidade', variavel: '[[CampoMensalidadeProjeto]]', depende: ['[[CampoKwpProjeto]]', '[[CampoPlanoProjeto]]'], descricao: 'Tabela faixas kWp × plano. kWp>50 ou NENHUM = 0.', formula: FORMULA_MENSALIDADE },
   { ordem: 2, nome: 'Tem desconto avulso', codigo: 'TemDescontoAvulso', variavel: '[[CampoTemDescontoAvulsoProjeto]]', depende: ['[[CampoPlanoProjeto]]', '[[CampoKwpProjeto]]'], descricao: '1 = Padrão ou Premium + kWp≤50.', formula: FORMULA_TEM_DESCONTO },
-  { ordem: 3, nome: 'Taxa de deslocamento', codigo: 'Deslocamento', variavel: '[[CampoDeslocamentoProjeto]]', depende: ['[[CampoKmProjeto]]'], descricao: 'ceil(km)-50 × taxa. Isento ≤50 km.', formula: FORMULA_DESLOCAMENTO, faixas: [['≤50 km', 'R$ 0'], ['51-200', 'R$ 2,40/km'], ['201-400', 'R$ 3,20/km'], ['401+', 'R$ 4,00/km']] },
+  { ordem: 3, nome: 'Taxa de deslocamento', codigo: 'Deslocamento', variavel: '[[CampoDeslocamentoProjeto]]', depende: ['[[CampoKmProjeto]]'], descricao: 'ceil(km) × taxa. Isento ≤50 km.', formula: FORMULA_DESLOCAMENTO, faixas: [['≤50 km', 'R$ 0'], ['51-200', 'R$ 1,50/km'], ['201-400', 'R$ 2,00/km'], ['401-600', 'R$ 2,50/km']] },
   { ordem: 4, nome: 'Total serviços avulsos', codigo: 'TotalServicosAvulsos', variavel: '[[CampoTotalServicosAvulsosProjeto]]', depende: [CHECKLIST_VAR, '[[CampoTemDescontoAvulsoProjeto]]', '[[CampoQtdPlacasProjeto]]', '[[CampoValorContratoProjeto]]'], descricao: 'Soma dos 9 serviços do checklist.', formula: FORMULA_TOTAL_SERVICOS },
   { ordem: 5, nome: 'Taxa sobre investimento', codigo: 'TaxaInvestimento', variavel: '[[CampoTaxaInvestimentoProjeto]]', depende: ['[[CampoValorInvestimentoProjeto]]'], descricao: '4,5% sobre valor do investimento.', formula: FORMULA_TAXA_INVEST },
   { ordem: 6, nome: 'Total avulsos', codigo: 'TotalAvulsos', variavel: '[[CampoTotalAvulsosProjeto]]', depende: ['[[CampoTotalServicosAvulsosProjeto]]', '[[CampoDeslocamentoProjeto]]', '[[CampoTaxaInvestimentoProjeto]]'], descricao: 'Serviços + deslocamento + taxa investimento.', formula: FORMULA_TOTAL_AVULSOS },
@@ -337,8 +337,8 @@ function arredondar(v) { return Math.round((v + Number.EPSILON) * 100) / 100; }
 function calcDeslocamento(km) {
   const k = Math.ceil(Number(km) || 0);
   if (k <= 50) return 0;
-  const taxa = k <= 200 ? 2.4 : k <= 400 ? 3.2 : 4;
-  return arredondar((k - 50) * taxa);
+  const taxa = k <= 200 ? 1.5 : k <= 400 ? 2 : 2.5;
+  return arredondar(k * taxa);
 }
 
 function calcMensalidade(kwp, plano) {
@@ -364,9 +364,9 @@ function calcProposta({ kwp, plano, km, servicos = [], placas = 0, valorContrato
 }
 
 const CASOS_TESTE = [
-  { nome: '8,5 kWp Acesso 80 km', kwp: 8.5, plano: 'ACESSO', km: 80, expMens: 14.9, expDesl: 72, expPrimeira: 86.9 },
-  { nome: '7 kWp Padrão 100 km', kwp: 7, plano: 'PADRAO', km: 100, expMens: 49.9, expDesl: 120 },
-  { nome: '25 kWp Premium 250 km', kwp: 25, plano: 'PREMIUM', km: 250, expMens: 179.9, expDesl: 640 },
+  { nome: '8,5 kWp Acesso 80 km', kwp: 8.5, plano: 'ACESSO', km: 80, expMens: 14.9, expDesl: 120, expPrimeira: 134.9 },
+  { nome: '7 kWp Padrão 100 km', kwp: 7, plano: 'PADRAO', km: 100, expMens: 49.9, expDesl: 150, expPrimeira: 199.9 },
+  { nome: '25 kWp Premium 250 km', kwp: 25, plano: 'PREMIUM', km: 250, expMens: 179.9, expDesl: 500, expPrimeira: 679.9 },
   { nome: '4 kWp Acesso 30 km', kwp: 4, plano: 'ACESSO', km: 30, expMens: 9.9, expDesl: 0 },
   { nome: '55 kWp Padrão (sob consulta)', kwp: 55, plano: 'PADRAO', km: 40, expMens: 0, expDesl: 0 },
 ];
@@ -409,8 +409,8 @@ function renderTabelas() {
   document.getElementById('lista-tabelas').innerHTML = `
     <div class="section-label">Faixas kWp × plano (mensalidade R$/mês)</div>
     <table class="table-ref"><thead><tr><th>Faixa</th><th>Acesso</th><th>Padrão</th><th>Premium</th></tr></thead><tbody>${kwpRows}<tr><td>&gt; 50 kWp</td><td colspan="3">Sob consulta</td></tr></tbody></table>
-    <div class="section-label" style="margin-top:14px">Deslocamento (km excedente após 50 km)</div>
-    <table class="table-ref"><thead><tr><th>Distância</th><th>Taxa/km</th></tr></thead><tbody><tr><td>≤ 50 km</td><td>R$ 0</td></tr><tr><td>51 – 200 km</td><td>R$ 2,40</td></tr><tr><td>201 – 400 km</td><td>R$ 3,20</td></tr><tr><td>401 km ou mais</td><td>R$ 4,00</td></tr></tbody></table>
+    <div class="section-label" style="margin-top:14px">Deslocamento (distância total acima de 50 km)</div>
+    <table class="table-ref"><thead><tr><th>Distância</th><th>Taxa/km</th></tr></thead><tbody><tr><td>≤ 50 km</td><td>R$ 0</td></tr><tr><td>51 – 200 km</td><td>R$ 1,50</td></tr><tr><td>201 – 400 km</td><td>R$ 2,00</td></tr><tr><td>401 – 600 km</td><td>R$ 2,50</td></tr></tbody></table>
   `;
 }
 
