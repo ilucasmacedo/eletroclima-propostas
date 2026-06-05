@@ -23,7 +23,7 @@ import { initGronerBusca, mostrarLinkNegocioGroner, montarUrlNegocioGroner, apli
 import { sincronizarDescricaoPropostaGroner } from './groner-sync.js';
 import { garantirContatoPropostaGroner } from './groner-garantir-contato.js';
 import { criarProjetoLeadGroner } from './groner-criar-projeto.js';
-import { LOGO_ALT, resolveLogoUrl } from './brand.js';
+import { LOGO_ALT, resolveSidebarLogoUrl } from './brand.js';
 import { tituloPagina, getVendedorPadrao, CLIENTE } from './cliente-config.js';
 
 const getValidadeDias = () => CONFIG_PRECIFICACAO.constantes.validade_proposta_dias;
@@ -553,12 +553,12 @@ async function baixarPdf(dadosExistentes) {
 function init() {
   const brandLogo = document.querySelector('.brand-logo-img');
   if (brandLogo) {
-    brandLogo.src = resolveLogoUrl();
+    brandLogo.src = resolveSidebarLogoUrl();
     brandLogo.alt = LOGO_ALT;
   }
 
-  const brandStrong = document.querySelector('.brand strong');
-  const brandSpan = document.querySelector('.brand span');
+  const brandStrong = document.querySelector('.brand-text strong');
+  const brandSpan = document.querySelector('.brand-text span');
   if (brandStrong && CLIENTE.produto?.tituloSidebar) {
     brandStrong.textContent = CLIENTE.produto.tituloSidebar;
   }

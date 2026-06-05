@@ -1,14 +1,22 @@
 import cliente from '../config/cliente.json';
-import { logoUrl as logoBundledUrl, logoSvgInline } from './brand-assets.js';
+import { logoUrl as logoBundledUrl, logoSidebarUrl, logoSvgInline } from './brand-assets.js';
 
 export const CLIENTE = cliente;
 
-/** Logo empacotada pelo Vite — sempre disponível no build */
+/** Logo horizontal — PDF e documentos claros */
 export const LOGO_URL = logoBundledUrl || cliente.marca?.logoUrl || '';
+/** Logo circular branca — sidebar escura */
+export const LOGO_SIDEBAR_URL = logoSidebarUrl || LOGO_URL;
 export const LOGO_ALT = cliente.marca?.logoAlt || cliente.nome || 'Logo';
 export const LOGO_SVG_INLINE = logoSvgInline;
 
-/** URL para img na sidebar (asset do bundle) */
+/** URL da logo na sidebar (círculo branco) */
+export function resolveSidebarLogoUrl() {
+  if (LOGO_SIDEBAR_URL) return LOGO_SIDEBAR_URL;
+  return resolveLogoUrl();
+}
+
+/** URL para img genérica (asset do bundle) */
 export function resolveLogoUrl() {
   if (LOGO_URL) return LOGO_URL;
   const url = cliente.marca?.logoUrl || '';
