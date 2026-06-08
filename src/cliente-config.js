@@ -1,5 +1,10 @@
 import cliente from '../config/cliente.json';
-import { logoUrl as logoBundledUrl, logoSidebarUrl, logoSvgInline } from './brand-assets.js';
+import {
+  logoUrl as logoBundledUrl,
+  logoSidebarUrl,
+  logoSvgInline,
+  logoSidebarSvgInline,
+} from './brand-assets.js';
 
 export const CLIENTE = cliente;
 
@@ -9,6 +14,7 @@ export const LOGO_URL = logoBundledUrl || cliente.marca?.logoUrl || '';
 export const LOGO_SIDEBAR_URL = logoSidebarUrl || LOGO_URL;
 export const LOGO_ALT = cliente.marca?.logoAlt || cliente.nome || 'Logo';
 export const LOGO_SVG_INLINE = logoSvgInline;
+export const LOGO_SIDEBAR_SVG_INLINE = logoSidebarSvgInline;
 
 /** URL da logo na sidebar (círculo branco) */
 export function resolveSidebarLogoUrl() {

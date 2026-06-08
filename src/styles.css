@@ -61,11 +61,35 @@ body {
 .brand-logo-wrap {
   flex-shrink: 0;
   line-height: 0;
+  width: 108px;
+  height: 108px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid rgba(234, 89, 28, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-sizing: border-box;
+}
+
+.brand-logo-inline {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.brand-logo-inline svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .brand-logo-img {
-  width: 88px;
-  height: 88px;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
 }
