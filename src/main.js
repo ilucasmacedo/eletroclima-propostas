@@ -13,6 +13,7 @@ import {
   getFormasPagamento,
   precosComparativoPlanos,
   formatarMoeda,
+  parseMoedaBR,
   gerarNumeroProposta,
 } from './pricing.js';
 import { gerarPropostaPdfBlob, montarHtmlProposta } from './pdf.js';
@@ -95,7 +96,7 @@ function getFormData() {
       qtdPlacas: parseInt(document.getElementById('usina-placas').value, 10) || 0,
       distanciaKm: parseFloat(document.getElementById('usina-distancia').value) || 0,
       endereco: document.getElementById('usina-endereco').value.trim(),
-      valorContrato: parseFloat(document.getElementById('usina-contrato').value) || 0,
+      valorContrato: parseMoedaBR(document.getElementById('usina-contrato').value),
     },
     plano: els.planoSelecionado.value,
     servicos: [...document.querySelectorAll('.servico-check:checked')].map((cb) => cb.value),
@@ -203,6 +204,10 @@ function renderServicos() {
     const preco = precoUnitarioServico(s, data.plano, aplicarDesconto);
     const sufixo =
       s.tipo === 'POR_PLACA' ? '/módulo' : s.tipo === 'PERCENTUAL' ? ' do contrato' : '';
+    const precoExibicao =
+      s.tipo === 'PERCENTUAL'
+        ? `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(preco * 100)}%`
+        : formatarMoeda(preco);
     const labelPreco = aplicarDesconto
       ? `com plano (−${getPercentualDescontoAvulso(data.plano)}%)`
       : 'valor tabelado';
@@ -214,7 +219,7 @@ function renderServicos() {
       <input type="checkbox" class="servico-check" value="${s.codigo}" ${checked} />
       <div>
         <strong>${s.descricao}</strong>
-        <span>${formatarMoeda(preco)}${sufixo}${extra} (${labelPreco})</span>
+        <span>${precoExibicao}${sufixo}${extra} (${labelPreco})</span>
       </div>
     </label>`;
   }).join('');

@@ -1,5 +1,6 @@
 import gronerConfig from '../config/groner-integracao.json';
 import { gronerApiFetch } from './groner-api.js';
+import { parseMoedaBR } from './pricing.js';
 const DEBOUNCE_MS = 450;
 const MIN_BUSCA = 3;
 
@@ -87,6 +88,19 @@ export function aplicarFormularioGroner(payload) {
     set('groner-projeto-id', groner.projetoId ?? '');
     set('groner-preco-simulacao', groner.precoSimulacao ?? '');
     set('groner-qtd-placas-projeto', groner.qtdPlacasProjeto ?? '');
+
+    if (groner.precoSimulacao != null && groner.precoSimulacao !== '') {
+      const valorContrato = parseMoedaBR(groner.precoSimulacao);
+      if (valorContrato > 0) {
+        const contratoEl = document.getElementById('usina-contrato');
+        if (contratoEl) {
+          contratoEl.value = valorContrato.toLocaleString('pt-BR', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2,
+          });
+        }
+      }
+    }
 
     if (groner.projetoId) {
       mostrarLinkNegocioGroner(montarUrlNegocioGroner(groner.projetoId), groner.projetoId);

@@ -124,6 +124,24 @@ export function formatarMoeda(valor) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
 }
 
+/** Converte moeda BR (20.000,00 / 20000,00 / R$ 20.000,00) para número */
+export function parseMoedaBR(valor) {
+  if (valor == null || valor === '') return 0;
+  if (typeof valor === 'number') return Number.isFinite(valor) ? valor : 0;
+
+  let s = String(valor).trim().replace(/\s/g, '').replace(/^R\$\s?/i, '');
+  if (!s) return 0;
+
+  if (s.includes(',')) {
+    s = s.replace(/\./g, '').replace(',', '.');
+  } else if (/^\d{1,3}(\.\d{3})+(\.\d+)?$/.test(s)) {
+    s = s.replace(/\./g, '');
+  }
+
+  const n = parseFloat(s);
+  return Number.isFinite(n) ? n : 0;
+}
+
 export function temPlanoContratado(plano) {
   return Boolean(plano) && plano !== SEM_PLANO;
 }
