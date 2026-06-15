@@ -78,6 +78,8 @@ export function aplicarFormularioGroner(payload) {
     if (usina.kwp != null) set('usina-kwp', usina.kwp);
     if (usina.qtdPlacas != null) set('usina-placas', usina.qtdPlacas);
     if (usina.endereco) set('usina-endereco', usina.endereco);
+    const distanciaEl = document.getElementById('usina-distancia');
+    if (distanciaEl) distanciaEl.value = '';
   }
 
   if (groner) {
