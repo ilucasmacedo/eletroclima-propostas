@@ -8,6 +8,7 @@
     "dev:api": "node server/dev.mjs",
     "dev:all": "npx concurrently -n api,web -c blue,green \"npm run dev:api\" \"npm run dev\"",
     "test:groner": "node scripts/test-groner-busca.mjs",
+    "groner:campos": "node scripts/listar-campos-groner.mjs",
     "groner:funil-pos-vendas": "node scripts/groner-criar-funil-pos-vendas.mjs",
     "novo-cliente": "node scripts/criar-projeto-cliente.mjs",
     "build": "vite build",

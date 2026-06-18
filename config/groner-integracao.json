@@ -11,12 +11,28 @@
   "camposPersonalizados": {
     "kwp": 0,
     "qtdPlacas": 0,
-    "pdfProposta": 0,
-    "descricaoProposta": 0,
-    "valorTotalProposta": 0,
-    "valorTotalSistema": 0,
+    "distanciaKm": 0,
     "plano": 0,
-    "mensalidade": 0
+    "mensalidade": 0,
+    "valorTotalProposta": 0,
+    "totalAvulsos": 0,
+    "valorTotalSistema": 0,
+    "valorContrato": 0,
+    "descricaoProposta": 0,
+    "pdfProposta": 0
   },
-  "notas": "Preencha os IDs dos campos personalizados do negócio Eletroclima (GET /api/CampoPersonalizado)"
+  "camposPersonalizadosLegenda": {
+    "kwp": "Potência (kWp) — resultado usina.kwp",
+    "qtdPlacas": "Nº de módulos — resultado usina.qtdPlacas",
+    "distanciaKm": "Distância da base (km)",
+    "plano": "Plano (radio): Sem plano, Plano Acesso, Plano Gold, Plano Premium",
+    "mensalidade": "Mensalidade recorrente (R$)",
+    "valorTotalProposta": "Total 1ª cobrança",
+    "totalAvulsos": "Total serviços avulsos + taxas",
+    "valorTotalSistema": "Valor do sistema (proposta Groner ou investimento)",
+    "valorContrato": "Valor contrato para seguro",
+    "descricaoProposta": "Campo texto/HTML — resumo completo da proposta",
+    "pdfProposta": "Campo arquivo — PDF gerado"
+  },
+  "notas": "Descubra IDs: node scripts/listar-campos-groner.mjs ou GET /api/groner/campos. Gravação: POST /api/CampoPersonalizado/{id}/Responder ao gerar PDF."
 }
