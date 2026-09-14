@@ -25,7 +25,7 @@
     "kwp": "Potência (kWp) — resultado usina.kwp",
     "qtdPlacas": "Nº de módulos — resultado usina.qtdPlacas",
     "distanciaKm": "Distância da base (km)",
-    "plano": "Plano (radio): Sem plano, Plano Acesso, Plano Gold, Plano Premium",
+    "plano": "Plano (radio): Sem plano, Plano Essencial, Plano Gold, Plano Premium",
     "mensalidade": "Mensalidade recorrente (R$)",
     "valorTotalProposta": "Total 1ª cobrança",
     "totalAvulsos": "Total serviços avulsos + taxas",

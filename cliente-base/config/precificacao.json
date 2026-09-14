@@ -125,7 +125,7 @@
   "planos": {
     "ACESSO": {
       "codigo": "ACESSO",
-      "nome": "Plano Acesso",
+      "nome": "Plano Essencial",
       "tagline": "Acompanhamento pelo App — monitoramento essencial",
       "desconto_avulso": false,
       "percentual_desconto_avulso": 0,
