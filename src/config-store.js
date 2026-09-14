@@ -4,10 +4,22 @@ export function cloneConfig(config) {
   return JSON.parse(JSON.stringify(config));
 }
 
+function aplicarNomesPlanosDoJson(stored, defaults) {
+  const next = cloneConfig(stored);
+  if (!defaults?.planos || !next?.planos) return next;
+
+  for (const [codigo, plano] of Object.entries(defaults.planos)) {
+    if (next.planos[codigo] && plano?.nome) {
+      next.planos[codigo].nome = plano.nome;
+    }
+  }
+  return next;
+}
+
 export function loadStoredConfig(defaultConfig) {
   try {
     const raw = localStorage.getItem(getStorageKeyPrecificacao());
-    if (raw) return JSON.parse(raw);
+    if (raw) return aplicarNomesPlanosDoJson(JSON.parse(raw), defaultConfig);
   } catch {
     /* usa padrão */
   }

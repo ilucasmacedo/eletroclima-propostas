@@ -10,11 +10,11 @@
 
 | Nome na planilha | Alias no sistema | Código sugerido |
 |------------------|------------------|-----------------|
-| Plano Acesso     | Basic            | `ACESSO`        |
+| Plano Essencial  | Basic / Acesso   | `ACESSO`        |
 | Plano Padrão     | Padrão           | `PADRAO`        |
 | Plano Premium    | Premium          | `PREMIUM`       |
 
-Os três nomes referem-se ao **mesmo produto**. Usar **Plano Acesso** como nome canônico em telas e documentos; aceitar o alias `Basic` apenas em integrações legadas.
+Os três nomes referem-se ao **mesmo produto**. Usar **Plano Essencial** como nome canônico em telas e documentos; o código interno permanece `ACESSO`.
 
 ---
 
@@ -24,7 +24,7 @@ Os três nomes referem-se ao **mesmo produto**. Usar **Plano Acesso** como nome 
 
 Valores em **R$/mês**, por usina. Aplicam-se a clientes no **raio de até 50 km** da base da empresa (ver § 3.2).
 
-| `kwp_min` | `kwp_max` | Acesso | Padrão | Premium | `sob_consulta` |
+| `kwp_min` | `kwp_max` | Essencial | Padrão | Premium | `sob_consulta` |
 |-----------|-----------|--------|--------|---------|----------------|
 | 0         | 5         | 9,90   | 39,90  | 59,90   | false          |
 | 5         | 10        | 14,90  | 49,90  | 89,90   | false          |

@@ -1,7 +1,7 @@
 # CRM — Variáveis para copiar e colar (v2 — espelho index.html)
 
 > **Use o painel:** [`crm-painel.html`](crm-painel.html) — fórmulas completas com botão Copiar  
-> Fonte: `pricing.js` · Planos: Acesso, Padrão, Premium · **Sem** Basic/Essencial inventados
+> Fonte: `pricing.js` · Planos: Essencial, Gold, Premium
 
 ---
 

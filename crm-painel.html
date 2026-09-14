@@ -163,7 +163,7 @@
 <header>
   <div>
     <h1>MHZ — CRM espelho do index.html</h1>
-    <p>Fonte: pricing.js + precificacao.json · Planos: Acesso, Gold, Premium</p>
+    <p>Fonte: pricing.js + precificacao.json · Planos: Essencial, Gold, Premium</p>
   </div>
 </header>
 
@@ -201,7 +201,7 @@
 
   <div class="panel" id="panel-servico">
     <div class="banner">
-      <strong>Radio/checklist retornam string completa.</strong> Use <code>[[Campo]] LIKE '%palavra%'</code> — a palavra deve existir no texto que o CRM devolve (ex.: <code>%Acesso%</code>, <code>%Padrão%</code>).
+      <strong>Radio/checklist retornam string completa.</strong> Use <code>[[Campo]] LIKE '%palavra%'</code> — a palavra deve existir no texto que o CRM devolve (ex.: <code>%Essencial%</code>, <code>%Padrão%</code>).
       Desconto automático via <code>[[CampoTemDescontoAvulsoProjeto]]</code> (Gold/Premium residencial, kWp ≤ 50).
     </div>
     <div id="lista-checklist"></div>
@@ -243,7 +243,7 @@ const ENTRADA = [
   { nome: 'Potência (kWp)', codigo: 'Kwp', variavel: '[[CampoKwpProjeto]]', tipo: 'numero', obrigatorio: true, descricao: 'Potência da usina — usina-kwp no index.html. Usado na mensalidade (faixa kWp × plano)' },
   { nome: 'Nº de placas', codigo: 'QtdPlacas', variavel: '[[CampoQtdPlacasProjeto]]', tipo: 'numero', obrigatorio: false, descricao: 'Usado em Manutenção preventiva (R$/placa)' },
   { nome: 'Distância da base (km)', codigo: 'Km', variavel: '[[CampoKmProjeto]]', tipo: 'numero', obrigatorio: true, descricao: 'Isento até 50 km; acima cobra distância total × taxa da faixa' },
-  { nome: 'Plano', codigo: 'Plano', variavel: '[[CampoPlanoProjeto]]', tipo: 'radio', obrigatorio: true, opcoes: ['NENHUM', 'ACESSO', 'PADRAO', 'PREMIUM'], descricao: 'Retorna texto completo da opção (ex.: "Plano Acesso"). Fórmulas usam LIKE para buscar palavra-chave dentro do valor.' },
+  { nome: 'Plano', codigo: 'Plano', variavel: '[[CampoPlanoProjeto]]', tipo: 'radio', obrigatorio: true, opcoes: ['NENHUM', 'ACESSO', 'PADRAO', 'PREMIUM'], descricao: 'Retorna texto completo da opção (ex.: "Plano Essencial"). Fórmulas usam LIKE para buscar palavra-chave dentro do valor.' },
   { nome: 'Valor do investimento (R$)', codigo: 'ValorInvestimento', variavel: '[[CampoValorInvestimentoProjeto]]', tipo: 'moeda', obrigatorio: false, descricao: 'Preenchido manualmente quando aplicável. Base da taxa 4,5%' },
   { nome: 'Valor do contrato p/ seguro (R$)', codigo: 'ValorContrato', variavel: '[[CampoValorContratoProjeto]]', tipo: 'moeda', obrigatorio: false, descricao: 'Preenchido manualmente quando contratar seguro. Base: 2% ou 1,5%' },
   { nome: 'Serviços adicionais', codigo: 'ServicosChecklist', variavel: '[[CampoServicosChecklistProjeto]]', tipo: 'checklist', obrigatorio: false, descricao: 'Checklist com 9 opções — aba Checklist' },
@@ -251,7 +251,7 @@ const ENTRADA = [
 
 const PLANO_TEXTO = {
   NENHUM: ['NENHUM', 'Nenhum', 'Sem plano'],
-  ACESSO: ['ACESSO', 'Acesso', 'Basic'],
+  ACESSO: ['ACESSO', 'Essencial', 'Acesso', 'Basic'],
   PADRAO: ['PADRAO', 'Padrao', 'Padrão', 'Gold', 'GOLD'],
   PREMIUM: ['PREMIUM', 'Premium'],
 };
@@ -364,10 +364,10 @@ function calcProposta({ kwp, plano, km, servicos = [], placas = 0, valorContrato
 }
 
 const CASOS_TESTE = [
-  { nome: '8,5 kWp Acesso 80 km', kwp: 8.5, plano: 'ACESSO', km: 80, expMens: 14.9, expDesl: 120, expPrimeira: 134.9 },
+  { nome: '8,5 kWp Essencial 80 km', kwp: 8.5, plano: 'ACESSO', km: 80, expMens: 14.9, expDesl: 120, expPrimeira: 134.9 },
   { nome: '7 kWp Gold 100 km', kwp: 7, plano: 'PADRAO', km: 100, expMens: 49.9, expDesl: 150, expPrimeira: 199.9 },
   { nome: '25 kWp Premium 250 km', kwp: 25, plano: 'PREMIUM', km: 250, expMens: 179.9, expDesl: 500, expPrimeira: 679.9 },
-  { nome: '4 kWp Acesso 30 km', kwp: 4, plano: 'ACESSO', km: 30, expMens: 9.9, expDesl: 0 },
+  { nome: '4 kWp Essencial 30 km', kwp: 4, plano: 'ACESSO', km: 30, expMens: 9.9, expDesl: 0 },
   { nome: '55 kWp Gold (sob consulta)', kwp: 55, plano: 'PADRAO', km: 40, expMens: 0, expDesl: 0 },
 ];
 
@@ -408,7 +408,7 @@ function renderTabelas() {
   let kwpRows = FAIXAS_KWP.map(f => `<tr><td>até ${f.max} kWp</td><td>R$ ${f.ACESSO.toFixed(2).replace('.',',')}</td><td>R$ ${f.PADRAO.toFixed(2).replace('.',',')}</td><td>R$ ${f.PREMIUM.toFixed(2).replace('.',',')}</td></tr>`).join('');
   document.getElementById('lista-tabelas').innerHTML = `
     <div class="section-label">Faixas kWp × plano (mensalidade R$/mês)</div>
-    <table class="table-ref"><thead><tr><th>Faixa</th><th>Acesso</th><th>Gold</th><th>Premium</th></tr></thead><tbody>${kwpRows}<tr><td>&gt; 50 kWp</td><td colspan="3">Sob consulta</td></tr></tbody></table>
+    <table class="table-ref"><thead><tr><th>Faixa</th><th>Essencial</th><th>Gold</th><th>Premium</th></tr></thead><tbody>${kwpRows}<tr><td>&gt; 50 kWp</td><td colspan="3">Sob consulta</td></tr></tbody></table>
     <div class="section-label" style="margin-top:14px">Deslocamento (distância total acima de 50 km)</div>
     <table class="table-ref"><thead><tr><th>Distância</th><th>Taxa/km</th></tr></thead><tbody><tr><td>≤ 50 km</td><td>R$ 0</td></tr><tr><td>51 – 200 km</td><td>R$ 1,50</td></tr><tr><td>201 – 400 km</td><td>R$ 2,00</td></tr><tr><td>401 – 600 km</td><td>R$ 2,50</td></tr></tbody></table>
   `;

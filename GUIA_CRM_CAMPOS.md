@@ -63,19 +63,19 @@ Abra o **crm-painel.html** → aba **Calculados** → copie nome, código, vari�
 - Faixas: 51–200 → R$ 2,40/km · 201–400 → R$ 3,20/km · 401+ → R$ 4,00/km  
 
 ### Desconto em serviços avulsos
-- **Acesso** e **sem plano** → preço cheio (fora_plano)  
+- **Essencial** e **sem plano** → preço cheio (fora_plano)  
 - **Padrão** e **Premium** + kWp ≤ 50 → preço com_plano  
 
 ### Campo Plano (radio) — texto completo
-O CRM **não retorna só o código** (`ACESSO`) — devolve a **string completa** da opção (ex.: `Plano Acesso`, `ACESSO`, etc.).  
+O CRM **não retorna só o código** (`ACESSO`) — devolve a **string completa** da opção (ex.: `Plano Essencial`, `ACESSO`, etc.).  
 Por isso as fórmulas usam:
 
 ```
-[[CampoPlanoProjeto]] LIKE '%Acesso%'
+[[CampoPlanoProjeto]] LIKE '%Essencial%'
 ```
 
-Isso significa: *“o texto que veio do campo contém ‘Acesso’?”* — funciona com string parcial ou completa.  
-Palavras-chave usadas: Acesso/Basic, Padrão/Padrao, Premium, Sem plano/Nenhum.
+Isso significa: *“o texto que veio do campo contém ‘Essencial’?”* — funciona com string parcial ou completa.  
+Palavras-chave usadas: Essencial/Acesso/Basic, Padrão/Padrao/Gold, Premium, Sem plano/Nenhum.
 
 ### Primeira cobrança
 ```
@@ -107,9 +107,9 @@ Valide no painel (aba **Validador**) ou no index.html:
 
 | kWp | Plano | km | Mensalidade | Deslocamento | 1ª cobrança |
 |-----|-------|-----|-------------|--------------|-------------|
-| 8,5 | Acesso | 80 | R$ 14,90 | R$ 72,00 | R$ 86,90 |
+| 8,5 | Essencial | 80 | R$ 14,90 | R$ 72,00 | R$ 86,90 |
 | 7 | Padrão | 100 | R$ 49,90 | R$ 120,00 | R$ 169,90 |
-| 4 | Acesso | 30 | R$ 9,90 | R$ 0 | R$ 9,90 |
+| 4 | Essencial | 30 | R$ 9,90 | R$ 0 | R$ 9,90 |
 
 ---
 

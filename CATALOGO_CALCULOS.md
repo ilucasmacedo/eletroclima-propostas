@@ -40,7 +40,7 @@ Valores que **precisam ser informados** para calcular uma proposta.
 
 **Plano (`plano`):**
 - `NENHUM` — Sem plano recorrente
-- `ACESSO` — Plano Acesso (Basic)
+- `ACESSO` — Plano Essencial
 - `PADRAO` — Plano Padrão
 - `PREMIUM` — Plano Premium
 
@@ -82,7 +82,7 @@ Valores que **precisam ser informados** para calcular uma proposta.
 
 | Código | Nome | Desconto em avulsos | Observação |
 |--------|------|---------------------|------------|
-| `ACESSO` | Plano Acesso | Não | Preço cheio nos serviços avulsos |
+| `ACESSO` | Plano Essencial | Não | Preço cheio nos serviços avulsos |
 | `PADRAO` | Plano Padrão | Sim | Usa coluna "Com plano" |
 | `PREMIUM` | Plano Premium | Sim | Usa coluna "Com plano" |
 | `NENHUM` | Sem plano | Não | Sem mensalidade recorrente |
@@ -100,7 +100,7 @@ usar_preco_com_plano =
 
 Valores em **R$/mês**. Regra de intervalo: **(min, max]** — limite inferior exclusivo.
 
-| Faixa kWp | Acesso | Padrão | Premium | Sob consulta |
+| Faixa kWp | Essencial | Padrão | Premium | Sob consulta |
 |-----------|--------|--------|---------|--------------|
 | 0 a 5 | R$ 9,90 | R$ 39,90 | R$ 59,90 | — |
 | 5 a 10 | R$ 14,90 | R$ 49,90 | R$ 89,90 | — |
