@@ -18,6 +18,11 @@ function aplicarNomesPlanosDoJson(stored, defaults) {
 
 export function loadStoredConfig(defaultConfig) {
   try {
+    if (typeof localStorage !== 'undefined') {
+      ['eletroclima-precificacao-v1', 'eletroclima-precificacao-v2'].forEach((key) => {
+        localStorage.removeItem(key);
+      });
+    }
     const raw = localStorage.getItem(getStorageKeyPrecificacao());
     if (raw) return aplicarNomesPlanosDoJson(JSON.parse(raw), defaultConfig);
   } catch {

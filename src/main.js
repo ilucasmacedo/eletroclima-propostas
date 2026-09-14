@@ -166,7 +166,7 @@ function renderPlanos() {
           tabindex="0"
           aria-pressed="${isSelected}"
         >
-          <h3 class="plano-nome">${plano.nome}</h3>
+          <h3 class="plano-nome">${plano.codigo === 'ACESSO' ? 'Plano Essencial' : plano.nome}</h3>
           <p class="plano-tagline">${plano.tagline}</p>
           ${precoHtml}
           <p class="plano-faixa">Faixa ${plano.faixa}</p>

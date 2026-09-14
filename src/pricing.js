@@ -42,6 +42,15 @@ export let SERVICOS = [];
 export let COBERTURAS = {};
 export let CONFIG_PRECIFICACAO = activeConfig;
 
+const NOME_EXIBICAO_PLANOS = {
+  ACESSO: 'Plano Essencial',
+};
+
+function nomePlanoExibicao(codigo, nome) {
+  if (NOME_EXIBICAO_PLANOS[codigo]) return NOME_EXIBICAO_PLANOS[codigo];
+  return nome || codigo;
+}
+
 function rebuildDerived(config) {
   activeConfig = config;
   CONFIG_PRECIFICACAO = config;
@@ -52,6 +61,7 @@ function rebuildDerived(config) {
       {
         ...plano,
         codigo,
+        nome: nomePlanoExibicao(codigo, plano.nome),
         descontoAvulso: Boolean(plano.desconto_avulso),
         percentualDescontoAvulso: Number(plano.percentual_desconto_avulso) || 0,
         coberturas: plano.coberturas ?? COBERTURAS_PADRAO[codigo] ?? [],
