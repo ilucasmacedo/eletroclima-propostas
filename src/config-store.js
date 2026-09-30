@@ -19,7 +19,7 @@ function aplicarNomesPlanosDoJson(stored, defaults) {
 export function loadStoredConfig(defaultConfig) {
   try {
     if (typeof localStorage !== 'undefined') {
-      ['eletroclima-precificacao-v1', 'eletroclima-precificacao-v2', 'eletroclima-precificacao-v3'].forEach((key) => {
+      ['eletroclima-precificacao-v1', 'eletroclima-precificacao-v2', 'eletroclima-precificacao-v3', 'eletroclima-precificacao-v4'].forEach((key) => {
         localStorage.removeItem(key);
       });
     }

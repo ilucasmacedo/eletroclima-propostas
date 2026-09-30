@@ -144,9 +144,9 @@
       "coberturas": [
         "Acesso Premium ao App de monitoramento",
         "Alertas de falhas",
-        "Relatório mensal de geração (com fatura por e-mail)",
+        "Relatório mensal de geração",
         "Suporte técnico remoto",
-        "Análise de faturas"
+        "Análise de fatura com reclamação na Equatorial"
       ]
     },
     "PREMIUM": {
@@ -158,9 +158,9 @@
       "coberturas": [
         "Acesso Premium ao App de monitoramento",
         "Alertas de falhas",
-        "Relatório mensal de geração (com fatura por e-mail)",
+        "Relatório mensal de geração",
         "Suporte técnico remoto",
-        "Análise de faturas",
+        "Análise de fatura com reclamação na Equatorial",
         "Prioridade no atendimento",
         "Seguro da usina (incluído no plano)"
       ]
