@@ -135,7 +135,7 @@ export function mountAdmin(root) {
 
     return `
       <div class="admin-section-head">
-        <p>Edite nomes, taglines e % de desconto em avulsos (Padrão 5%, Premium 10%).</p>
+        <p>Edite nomes, taglines e coberturas dos planos.</p>
         <button type="button" class="btn btn-secondary btn-sm" id="adm-add-plano">+ Adicionar plano</button>
       </div>
       <div class="admin-cards">${cards}</div>`;

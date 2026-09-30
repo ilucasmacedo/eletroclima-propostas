@@ -8,6 +8,7 @@ import {
   calcularProposta,
   planoTemDescontoAvulso,
   temPlanoContratado,
+  planoIncluiSeguro,
   getPercentualDescontoAvulso,
   precoUnitarioServico,
   getFormasPagamento,
@@ -201,16 +202,20 @@ function renderServicos() {
   );
 
   els.servicosGrid.innerHTML = SERVICOS.map((s) => {
-    const preco = precoUnitarioServico(s, data.plano, aplicarDesconto);
+    const incluso = s.codigo === 'SEGURO' && planoIncluiSeguro(data.plano);
+    const preco = incluso ? 0 : precoUnitarioServico(s, data.plano, aplicarDesconto);
     const sufixo =
-      s.tipo === 'POR_PLACA' ? '/módulo' : s.tipo === 'PERCENTUAL' ? ' do contrato' : '';
-    const precoExibicao =
-      s.tipo === 'PERCENTUAL'
+      s.tipo === 'POR_PLACA' ? '/módulo' : s.tipo === 'PERCENTUAL' && !incluso ? ' do contrato' : '';
+    const precoExibicao = incluso
+      ? 'Incluído no Plano Premium'
+      : s.tipo === 'PERCENTUAL'
         ? `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(preco * 100)}%`
         : formatarMoeda(preco);
-    const labelPreco = aplicarDesconto
-      ? `com plano (−${getPercentualDescontoAvulso(data.plano)}%)`
-      : 'valor tabelado';
+    const labelPreco = incluso
+      ? 'sem cobrança extra'
+      : aplicarDesconto
+        ? `com plano (−${getPercentualDescontoAvulso(data.plano)}%)`
+        : 'valor tabelado';
     const extra = s.presencial ? ' + deslocamento' : '';
     const checked = selecionados.has(s.codigo) ? 'checked' : '';
 

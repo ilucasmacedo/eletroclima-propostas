@@ -139,31 +139,30 @@
       "codigo": "PADRAO",
       "nome": "Plano Gold",
       "tagline": "Acompanhamento operacional completo",
-      "desconto_avulso": true,
-      "percentual_desconto_avulso": 5,
+      "desconto_avulso": false,
+      "percentual_desconto_avulso": 0,
       "coberturas": [
         "Acesso Premium ao App de monitoramento",
         "Alertas de falhas",
-        "Relatório de geração e consumo (com fatura por e-mail)",
+        "Relatório mensal de geração (com fatura por e-mail)",
         "Suporte técnico remoto",
-        "Análise de faturas",
-        "Desconto de 5% em serviços avulsos"
+        "Análise de faturas"
       ]
     },
     "PREMIUM": {
       "codigo": "PREMIUM",
       "nome": "Plano Premium",
       "tagline": "Gestão energética estratégica",
-      "desconto_avulso": true,
-      "percentual_desconto_avulso": 10,
+      "desconto_avulso": false,
+      "percentual_desconto_avulso": 0,
       "coberturas": [
         "Acesso Premium ao App de monitoramento",
         "Alertas de falhas",
-        "Relatório de geração e consumo (com fatura por e-mail)",
+        "Relatório mensal de geração (com fatura por e-mail)",
         "Suporte técnico remoto",
         "Análise de faturas",
         "Prioridade no atendimento",
-        "Desconto de 10% em serviços avulsos"
+        "Seguro da usina (incluído no plano)"
       ]
     }
   },
@@ -197,7 +196,7 @@
     { "codigo": "WIFI_PRESENCIAL",   "descricao": "Reconexão Wi-Fi presencial",           "fora_plano": 150,  "tipo_calculo": "FIXO",       "presencial": true  },
     { "codigo": "VISITA_INSPECAO",   "descricao": "Visita técnica / inspeção",            "fora_plano": 300,  "tipo_calculo": "FIXO",       "presencial": true  },
     { "codigo": "MANUT_PREVENTIVA",  "descricao": "Manutenção preventiva",                "fora_plano": 30,   "tipo_calculo": "POR_MODULO", "presencial": true  },
-    { "codigo": "WIFI_REMOTA",       "descricao": "Reconexão Wi-Fi remota",               "fora_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
+    { "codigo": "WIFI_REMOTA",       "descricao": "Reconexão Wi-Fi remota",               "fora_plano": 50,   "tipo_calculo": "FIXO",       "presencial": false },
     { "codigo": "RATEIO_CREDITOS",   "descricao": "Rateio de créditos",                   "fora_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
     { "codigo": "ANALISE_FATURA",    "descricao": "Análise de fatura com reclamação",     "fora_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
     { "codigo": "RECLAMACAO_TENSAO", "descricao": "Reclamação de nível de tensão",        "fora_plano": 150,  "tipo_calculo": "FIXO",       "presencial": false },

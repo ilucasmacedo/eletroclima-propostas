@@ -23,7 +23,7 @@
     "tituloAdmin": "Administração"
   },
   "localStorage": {
-    "precificacaoKey": "eletroclima-precificacao-v3",
+    "precificacaoKey": "eletroclima-precificacao-v4",
     "eventoConfig": "eletroclima-config-updated"
   },
   "groner": {

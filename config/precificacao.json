@@ -1,7 +1,7 @@
 {
   "meta": {
     "versao": "2.0",
-    "atualizado_em": "2026-06-03",
+    "atualizado_em": "2026-09-30",
     "descricao": "Política de precificação Eletroclima — serviços, deslocamento e planos de gestão energética",
     "fonte_codigo": "src/pricing.js",
     "unidade_moeda": "BRL",
@@ -139,31 +139,30 @@
       "codigo": "PADRAO",
       "nome": "Plano Gold",
       "tagline": "Acompanhamento operacional completo",
-      "desconto_avulso": true,
-      "percentual_desconto_avulso": 5,
+      "desconto_avulso": false,
+      "percentual_desconto_avulso": 0,
       "coberturas": [
         "Acesso Premium ao App de monitoramento",
         "Alertas de falhas",
-        "Relatório de geração e consumo (com fatura por e-mail)",
+        "Relatório mensal de geração (com fatura por e-mail)",
         "Suporte técnico remoto",
-        "Análise de faturas",
-        "Desconto de 5% em serviços avulsos"
+        "Análise de faturas"
       ]
     },
     "PREMIUM": {
       "codigo": "PREMIUM",
       "nome": "Plano Premium",
       "tagline": "Gestão energética estratégica",
-      "desconto_avulso": true,
-      "percentual_desconto_avulso": 10,
+      "desconto_avulso": false,
+      "percentual_desconto_avulso": 0,
       "coberturas": [
         "Acesso Premium ao App de monitoramento",
         "Alertas de falhas",
-        "Relatório de geração e consumo (com fatura por e-mail)",
+        "Relatório mensal de geração (com fatura por e-mail)",
         "Suporte técnico remoto",
         "Análise de faturas",
         "Prioridade no atendimento",
-        "Desconto de 10% em serviços avulsos"
+        "Seguro da usina (incluído no plano)"
       ]
     }
   },
@@ -197,7 +196,7 @@
     { "codigo": "WIFI_PRESENCIAL",   "descricao": "Reconexão Wi-Fi presencial",           "fora_plano": 150,  "tipo_calculo": "FIXO",       "presencial": true  },
     { "codigo": "VISITA_INSPECAO",   "descricao": "Visita técnica / inspeção",            "fora_plano": 300,  "tipo_calculo": "FIXO",       "presencial": true  },
     { "codigo": "MANUT_PREVENTIVA",  "descricao": "Manutenção preventiva",                "fora_plano": 30,   "tipo_calculo": "POR_MODULO", "presencial": true  },
-    { "codigo": "WIFI_REMOTA",       "descricao": "Reconexão Wi-Fi remota",               "fora_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
+    { "codigo": "WIFI_REMOTA",       "descricao": "Reconexão Wi-Fi remota",               "fora_plano": 50,   "tipo_calculo": "FIXO",       "presencial": false },
     { "codigo": "RATEIO_CREDITOS",   "descricao": "Rateio de créditos",                   "fora_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
     { "codigo": "ANALISE_FATURA",    "descricao": "Análise de fatura com reclamação",     "fora_plano": 100,  "tipo_calculo": "FIXO",       "presencial": false },
     { "codigo": "RECLAMACAO_TENSAO", "descricao": "Reclamação de nível de tensão",        "fora_plano": 150,  "tipo_calculo": "FIXO",       "presencial": false },
@@ -213,7 +212,7 @@
     {
       "codigo": "DESCONTO_AVULSO",
       "expressao": "preco = fora_plano × (1 - percentual_desconto_avulso/100)",
-      "condicoes": ["PADRAO → 5%", "PREMIUM → 10%", "ACESSO → 0%", "SEGURO → sem desconto"]
+      "condicoes": ["PADRAO → 0%", "PREMIUM → 0%", "ACESSO → 0%", "SEGURO no PREMIUM → incluído"]
     },
     {
       "codigo": "MANUT_PREVENTIVA",
@@ -230,8 +229,8 @@
     { "id": 1, "kwp": 4,    "plano": "ACESSO",  "km": 30,  "mensalidade_esperada": 9.9,   "deslocamento_esperado": 0   },
     { "id": 2, "kwp": 7,    "plano": "PADRAO",  "km": 100, "mensalidade_esperada": 49.9,  "deslocamento_esperado": 75  },
     { "id": 3, "kwp": 75,   "plano": "PREMIUM", "km": 250, "mensalidade_esperada": 699.9, "deslocamento_esperado": 400 },
-    { "id": 4, "plano": "PADRAO", "servico": "WIFI_REMOTA", "esperado": 95, "nota": "100 - 5%" },
-    { "id": 5, "plano": "PREMIUM", "servico": "WIFI_REMOTA", "esperado": 90, "nota": "100 - 10%" },
+    { "id": 4, "plano": "PADRAO", "servico": "WIFI_REMOTA", "esperado": 50, "nota": "preço tabelado R$ 50" },
+    { "id": 5, "plano": "PREMIUM", "servico": "WIFI_REMOTA", "esperado": 50, "nota": "preço tabelado R$ 50" },
     { "id": 6, "servico": "MANUT_PREVENTIVA", "modulos": 20, "esperado": 600 },
     { "id": 7, "servico": "SEGURO", "valor_contrato": 50000, "esperado": 1000 }
   ]

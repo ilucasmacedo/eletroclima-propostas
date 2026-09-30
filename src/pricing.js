@@ -16,19 +16,18 @@ const COBERTURAS_PADRAO = {
   PADRAO: [
     'Acesso Premium ao App de monitoramento',
     'Alertas de falhas',
-    'Relatório de geração e consumo',
+    'Relatório mensal de geração (com fatura por e-mail)',
     'Suporte técnico remoto',
     'Análise de faturas',
-    'Desconto de 5% em serviços avulsos',
   ],
   PREMIUM: [
     'Acesso Premium ao App de monitoramento',
     'Alertas de falhas',
-    'Relatório de geração e consumo',
+    'Relatório mensal de geração (com fatura por e-mail)',
     'Suporte técnico remoto',
     'Análise de faturas',
     'Prioridade no atendimento',
-    'Desconto de 10% em serviços avulsos',
+    'Seguro da usina (incluído no plano)',
   ],
 };
 
@@ -230,8 +229,24 @@ export function calcularMensalidade(kwp, plano) {
   };
 }
 
+export function planoIncluiSeguro(plano) {
+  return String(plano ?? '').toUpperCase() === 'PREMIUM';
+}
+
 export function calcularServico(servico, opts) {
   const { plano, aplicarDescontoPlano, qtdPlacas, valorContrato, distanciaKm, incluirDeslocamento } = opts;
+
+  if (servico.codigo === 'SEGURO' && planoIncluiSeguro(plano)) {
+    return {
+      codigo: servico.codigo,
+      descricao: `${servico.descricao} — incluído no Plano Premium`,
+      subtotal: 0,
+      valorServico: 0,
+      deslocamento: 0,
+      inclusoNoPlano: true,
+    };
+  }
+
   const precoBase = precoUnitarioServico(servico, plano, aplicarDescontoPlano);
   let subtotal = 0;
 
@@ -327,10 +342,22 @@ export function calcularProposta(input) {
     itens.push({
       tipo: 'SERVICO',
       codigo,
-      descricao: servico.descricao,
+      descricao: result.descricao,
       subtotal: result.subtotal,
     });
     totalAvulsos += result.subtotal;
+  }
+
+  if (planoIncluiSeguro(plano) && !servicosSelecionados.includes('SEGURO')) {
+    const servicoSeguro = SERVICOS.find((s) => s.codigo === 'SEGURO');
+    if (servicoSeguro) {
+      itens.push({
+        tipo: 'SERVICO',
+        codigo: 'SEGURO',
+        descricao: `${servicoSeguro.descricao} — incluído no Plano Premium`,
+        subtotal: 0,
+      });
+    }
   }
 
   if (
